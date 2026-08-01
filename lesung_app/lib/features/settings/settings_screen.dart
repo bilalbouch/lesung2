@@ -12,9 +12,8 @@ import '../../design_system/tokens/app_icons.dart';
 import '../../design_system/tokens/app_radius.dart';
 import '../../design_system/tokens/app_spacing.dart';
 import '../../main.dart' show BrandLogo;
+import '../../l10n/generated/app_localizations.dart';
 
-/// Mehr — réglages de lecture (persistés par le moteur), statistiques
-/// réelles de la bibliothèque et informations sur l'application.
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -48,6 +47,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = AppColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     final engine = ref.read(engineProvider);
@@ -60,31 +60,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           padding: AppSpacing.screen,
           children: [
             AppSpacing.gapXl,
-            Text('Mehr', style: textTheme.displayLarge),
+            Text(l10n.settingsTitle, style: textTheme.displayLarge),
             AppSpacing.gapXxl,
 
-            // -- Raccourcis bibliothèque ------------------------------
-            const SectionTitle(title: 'Bibliothek'),
+            SectionTitle(title: l10n.settingsLibrarySection),
             AppSpacing.gapM,
             _SettingsTile(
               icon: AppIcons.favorite,
-              title: 'Favoriten',
+              title: l10n.libraryFavorites,
               onTap: () => context.push(AppRoutes.favorites),
             ),
             _SettingsTile(
               icon: AppIcons.collection,
-              title: 'Sammlungen',
+              title: l10n.libraryCollections,
               onTap: () => context.push(AppRoutes.collections),
             ),
             _SettingsTile(
               icon: AppIcons.history,
-              title: 'Verlauf',
+              title: l10n.libraryHistory,
               onTap: () => context.push(AppRoutes.history),
             ),
             AppSpacing.gapXxl,
 
-            // -- Style de lecture ---------------------------------------
-            const SectionTitle(title: 'Lesestil'),
+            SectionTitle(title: l10n.settingsReadingStyle),
             AppSpacing.gapM,
             Container(
               padding: AppSpacing.card,
@@ -95,7 +93,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Design', style: textTheme.bodySmall),
+                  Text(l10n.readerSettingsTheme,
+                      style: textTheme.bodySmall),
                   AppSpacing.gapM,
                   Row(
                     children: [
@@ -118,7 +117,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   AppSpacing.gapL,
                   _SliderRow(
-                    label: 'Schrift',
+                    label: l10n.readerSettingsFontSize,
                     value: settings.fontSize,
                     min: 10,
                     max: 32,
@@ -126,7 +125,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         .updateSettings((s) => s.copyWith(fontSize: v)),
                   ),
                   _SliderRow(
-                    label: 'Abstand',
+                    label: l10n.readerSettingsLineHeight,
                     value: settings.lineHeight,
                     min: 1.0,
                     max: 2.5,
@@ -134,7 +133,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         .updateSettings((s) => s.copyWith(lineHeight: v)),
                   ),
                   _SliderRow(
-                    label: 'Ränder',
+                    label: l10n.readerSettingsMargins,
                     value: settings.marginHorizontal,
                     min: 0,
                     max: 64,
@@ -146,9 +145,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             AppSpacing.gapXxl,
 
-            // -- Statistiques -------------------------------------------
             if (stats != null) ...[
-              const SectionTitle(title: 'Statistik'),
+              SectionTitle(title: l10n.settingsStatistics),
               AppSpacing.gapM,
               Container(
                 padding: AppSpacing.card,
@@ -158,35 +156,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 child: Column(
                   children: [
-                    _StatRow(label: 'Bücher', value: '${stats.totalBooks}'),
+                    _StatRow(label: l10n.settingsBooks, value: '${stats.totalBooks}'),
                     _StatRow(
-                        label: 'Heruntergeladen',
+                        label: l10n.libraryDownloaded,
                         value: '${stats.downloadedBooks}'),
                     _StatRow(
-                        label: 'Beendet',
+                        label: l10n.settingsFinished,
                         value: '${stats.finishedBooks}'),
                     _StatRow(
-                        label: 'Favoriten',
+                        label: l10n.libraryFavorites,
                         value: '${stats.favoritesCount}'),
                     _StatRow(
-                        label: 'Lesezeit',
+                        label: l10n.settingsReadingTime,
                         value: _formatReadingTime(
-                            stats.totalReadingSeconds)),
+                            stats.totalReadingSeconds, l10n)),
                   ],
                 ),
               ),
               AppSpacing.gapXxl,
             ],
 
-            // -- À propos ------------------------------------------------
             Center(
               child: Column(
                 children: [
                   const BrandLogo(size: 56),
                   AppSpacing.gapM,
-                  Text('Lesung', style: textTheme.titleLarge),
+                  Text(l10n.appName, style: textTheme.titleLarge),
                   AppSpacing.gapXs,
-                  Text('Deine Bibliothek. Privat. Lokal.',
+                  Text(l10n.appTagline,
                       style: textTheme.bodySmall),
                 ],
               ),
@@ -198,12 +195,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  String _formatReadingTime(int seconds) {
+  String _formatReadingTime(int seconds, AppLocalizations l10n) {
     final duration = Duration(seconds: seconds);
     if (duration.inHours > 0) {
-      return '${duration.inHours} Std. ${duration.inMinutes % 60} Min.';
+      return l10n.settingsHoursMinutes(duration.inHours, duration.inMinutes % 60);
     }
-    return '${duration.inMinutes} Min.';
+    return l10n.settingsMinutesOnly(duration.inMinutes);
   }
 }
 

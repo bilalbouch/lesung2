@@ -1,5 +1,5 @@
 name: lesung_app
-description: "Lesung — application de lecture premium (usage privé)."
+description: "Lesung — application de lecture premium."
 publish_to: 'none'
 version: 0.1.0
 
@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   lesung:
     path: ../lesung
   go_router: ^14.8.1
@@ -17,6 +19,8 @@ dependencies:
   cached_network_image: ^3.4.1
   intl: ^0.20.2
   path_provider: ^2.1.5
+  file_picker: ^8.0.0+1
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
@@ -25,5 +29,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/brand/

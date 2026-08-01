@@ -79,7 +79,7 @@ class AppTheme {
         centerTitle: false,
         titleTextStyle: apply(AppTypography.title, serifFont: true),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: colors.surface,
         elevation: 0,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.card),
@@ -92,7 +92,7 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardSmall),
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: colors.surface,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.card),
         titleTextStyle: apply(AppTypography.title, serifFont: true),

@@ -14,6 +14,7 @@ import '../../components/favorite_button.dart';
 import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_icons.dart';
 import '../../design_system/tokens/app_spacing.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Détails du livre — couverture en héros, métadonnées discrètes,
 /// action principale : Télécharger.
@@ -70,17 +71,19 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
     final isFav = await manager.favorites.toggle(book.dedupKey);
     if (!mounted) return;
     setState(() => _isFavorite = isFav);
+    final l10n = AppLocalizations.of(context)!;
     AppSnackbars.info(context,
-        isFav ? 'Zu Favoriten hinzugefügt' : 'Aus Favoriten entfernt');
+        isFav ? l10n.bookDetailsAddedToFavorites : l10n.bookDetailsRemovedFromFavorites);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = AppColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     final book = widget.item.book;
 
-    final meta = <String>[
+    final meta = [
       if (book.format.name != 'unknown') book.format.name.toUpperCase(),
       if (book.language != null && book.language!.isNotEmpty)
         book.language!.toUpperCase(),
@@ -136,7 +139,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
           ),
           AppSpacing.gapXxl,
           ActionButton(
-            label: _downloading ? 'Wird geladen…' : 'Herunterladen',
+            label: _downloading ? l10n.bookDetailsDownloading : l10n.bookDetailsDownload,
             icon: AppIcons.download,
             expanded: true,
             onPressed: _downloading ? null : _startDownload,
@@ -153,11 +156,10 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
           ),
           if (book.description != null && book.description!.isNotEmpty) ...[
             AppSpacing.gapXxl,
-            Text('Beschreibung', style: textTheme.titleLarge),
+            Text(l10n.bookDetailsDescription, style: textTheme.titleLarge),
             AppSpacing.gapM,
             Text(book.description!,
-                style:
-                    textTheme.bodyLarge?.copyWith(height: 1.6)),
+                style: textTheme.bodyLarge?.copyWith(height: 1.6)),
           ],
           AppSpacing.gapXxl,
         ],
@@ -166,11 +168,11 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
   }
 
   Future<void> _startDownload() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _downloading = true);
     final engine = ref.read(engineProvider);
     final book = widget.item.book;
     try {
-      // Résolution des liens via la source d'origine du livre.
       if (book.refs.isEmpty) {
         throw StateError('Keine Quelle für dieses Buch.');
       }
@@ -203,11 +205,11 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
         expectedSizeBytes: book.fileSizeBytes,
       ));
       if (mounted) {
-        AppSnackbars.success(context, 'Download gestartet.');
+        AppSnackbars.success(context, l10n.bookDetailsDownloadStarted);
       }
     } catch (e) {
       if (mounted) {
-        AppSnackbars.error(context, 'Download fehlgeschlagen: $e');
+        AppSnackbars.error(context, l10n.bookDetailsDownloadFailed(e.toString()));
       }
     } finally {
       if (mounted) setState(() => _downloading = false);
