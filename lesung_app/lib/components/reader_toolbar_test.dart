@@ -4,7 +4,6 @@ import '../design_system/tokens/app_colors.dart';
 import '../design_system/tokens/app_icons.dart';
 import '../design_system/tokens/app_motion.dart';
 import '../design_system/tokens/app_spacing.dart';
-import 'tts_button.dart';
 
 /// Barre d'outils du Reader â€” apparaÃ®t/disparaÃ®t au tap central.
 ///
@@ -94,7 +93,6 @@ class ReaderToolbar extends StatelessWidget {
 
 /// Barre infÃ©rieure du Reader (navigation chapitres + progression).
 class ReaderBottomBar extends StatelessWidget {
-  final String? text;
   final bool visible;
   final double progress;
   final VoidCallback? onPreviousChapter;
@@ -102,7 +100,6 @@ class ReaderBottomBar extends StatelessWidget {
   final VoidCallback? onSettings;
 
   const ReaderBottomBar({
-    this.text,
     super.key,
     required this.visible,
     required this.progress,
