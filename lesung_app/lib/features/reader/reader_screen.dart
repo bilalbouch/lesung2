@@ -1,0 +1,494 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lesung/features/reader/domain/reader_settings.dart';
+import 'package:lesung/features/reader/presentation/reader_controller.dart';
+
+import '../../app/engine.dart';
+import '../../app/router.dart';
+import '../../components/app_animations.dart';
+import '../../components/app_bottom_sheet.dart';
+import '../../components/app_progress_indicator.dart';
+import '../../components/reader_toolbar.dart';
+import '../../design_system/tokens/app_colors.dart';
+import '../../design_system/tokens/app_icons.dart';
+import '../../design_system/tokens/app_motion.dart';
+import '../../design_system/tokens/app_spacing.dart';
+
+/// Reader premium — surface de lecture épurée : le texte est l'élément
+/// principal, les chrome (barres) n'apparaissent qu'au tap central.
+///
+/// Pagination v1 par unité (chapitre EPUB / page PDF), défilement
+/// vertical continu dans l'unité. Sauvegarde automatique de la position
+/// assurée par le ReaderManager (toutes les 15 s + à la fermeture).
+class ReaderScreen extends ConsumerStatefulWidget {
+  final ReaderBookArgs book;
+
+  const ReaderScreen({super.key, required this.book});
+
+  @override
+  ConsumerState<ReaderScreen> createState() => _ReaderScreenState();
+}
+
+class _ReaderScreenState extends ConsumerState<ReaderScreen> {
+  late final ReaderController _controller;
+  bool _chromeVisible = false;
+
+  /// Texte de l'unité courante (chargé à chaque changement d'unité).
+  String? _unitText;
+  int? _loadedUnit;
+
+  @override
+  void initState() {
+    super.initState();
+    final engine = ref.read(engineProvider);
+    _controller = ReaderController(manager: engine.createReaderManager());
+    _controller.stream.listen((state) {
+      if (!mounted) return;
+      final unit = state.position?.unitIndex;
+      if (state.status == ReaderStatus.ready && unit != _loadedUnit) {
+        _loadUnitText(unit ?? 0);
+      }
+      setState(() {});
+    });
+    _open();
+  }
+
+  Future<void> _open() async {
+    final engine = ref.read(engineProvider);
+    await _controller.init();
+    // La bibliothèque est informée via callback — le Reader n'émet
+    // jamais d'événement lui-même (single-writer).
+    await engine.libraryManager.openReading(widget.book.bookId);
+    await _controller.openBook(widget.book.filePath);
+  }
+
+  Future<void> _loadUnitText(int unitIndex) async {
+    _loadedUnit = unitIndex;
+    final text =
+        await _controller.manager.reader?.unitText(unitIndex);
+    if (mounted && _loadedUnit == unitIndex) {
+      setState(() => _unitText = text ?? '');
+    }
+  }
+
+  @override
+  void dispose() {
+    final engine = ref.read(engineProvider);
+    engine.libraryManager.closeReading(widget.book.bookId);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  // ---------------------------------------------------------------
+  // Thème actif (fond / encre issus des presets du moteur)
+  // ---------------------------------------------------------------
+
+  ReaderTheme get _theme =>
+      ReaderTheme.byId(_controller.state.settings.themeId);
+
+  TextStyle _readingTextStyle(ReaderSettings settings) {
+    final base = switch (settings.fontFamily) {
+      'lora' => GoogleFonts.lora(),
+      'inter' => GoogleFonts.inter(),
+      'system_serif' =>
+        const TextStyle(fontFamily: 'serif'),
+      'mono' => const TextStyle(fontFamily: 'monospace'),
+      _ => const TextStyle(),
+    };
+    return base.copyWith(
+      fontSize: settings.fontSize,
+      height: settings.lineHeight,
+      color: Color(_theme.textColor),
+    );
+  }
+
+  TextAlign _flutterAlign(ReaderTextAlign align) => switch (align) {
+        ReaderTextAlign.left => TextAlign.left,
+        ReaderTextAlign.justify => TextAlign.justify,
+        ReaderTextAlign.right => TextAlign.right,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final state = _controller.state;
+    final theme = _theme;
+    final settings = state.settings;
+
+    return Scaffold(
+      backgroundColor: Color(theme.backgroundColor),
+      body: Stack(
+        children: [
+          // -- Surface de lecture -------------------------------------
+          GestureDetector(
+            onTapUp: (details) {
+              final width = MediaQuery.sizeOf(context).width;
+              final dx = details.localPosition.dx;
+              if (dx < width * 0.25) {
+                _controller.previousChapter();
+              } else if (dx > width * 0.75) {
+                _controller.nextChapter();
+              } else {
+                setState(() => _chromeVisible = !_chromeVisible);
+              }
+            },
+            child: SafeArea(
+              child: _buildBody(state, settings),
+            ),
+          ),
+
+          // -- Chrome ---------------------------------------------------
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ReaderToolbar(
+              visible: _chromeVisible,
+              chapterTitle: state.position?.chapterTitle ?? state.title,
+              progress: state.position?.progress ?? 0,
+              bookmarked: _isBookmarked(state),
+              onBack: () => Navigator.of(context).maybePop(),
+              onSearch: _openSearch,
+              onToc: _openToc,
+              onBookmark: () async {
+                await _controller.toggleBookmarkAtCurrentPosition();
+                if (mounted) setState(() {});
+              },
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: ReaderBottomBar(
+              visible: _chromeVisible,
+              progress: state.position?.progress ?? 0,
+              onPreviousChapter: _controller.previousChapter,
+              onNextChapter: _controller.nextChapter,
+              onSettings: _openSettings,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _isBookmarked(ReaderViewState state) {
+    final unit = state.position?.unitIndex;
+    if (unit == null) return false;
+    return state.bookmarks.any((b) => b.unitIndex == unit);
+  }
+
+  Widget _buildBody(ReaderViewState state, ReaderSettings settings) {
+    if (state.status == ReaderStatus.loading ||
+        state.status == ReaderStatus.idle) {
+      return const Center(child: AppLoadingSpinner());
+    }
+    if (state.status == ReaderStatus.error) {
+      return Center(
+        child: Padding(
+          padding: AppSpacing.screen,
+          child: Text(
+            'Das Buch konnte nicht geöffnet werden.\n'
+            '${state.errorMessage ?? ''}',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ),
+      );
+    }
+
+    final text = _unitText;
+    if (text == null) return const Center(child: AppLoadingSpinner());
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.l + settings.marginHorizontal,
+        vertical: AppSpacing.xl + settings.marginVertical,
+      ),
+      child: AppAnimations.fadeIn(
+        key: ValueKey(_loadedUnit),
+        child: SelectableText(
+          text.isEmpty ? '—' : text,
+          style: _readingTextStyle(settings),
+          textAlign: _flutterAlign(settings.textAlign),
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------
+  // Feuilles : sommaire, recherche, réglages
+  // ---------------------------------------------------------------
+
+  void _openToc() {
+    final state = _controller.state;
+    final entries = state.tableOfContents.expand((e) => e.flatten()).toList();
+    AppBottomSheet.show<void>(
+      context,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppBottomSheet.header(context, title: 'Inhaltsverzeichnis'),
+          if (entries.isEmpty)
+            Text('Kein Inhaltsverzeichnis verfügbar.',
+                style: Theme.of(context).textTheme.bodyMedium)
+          else
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                  maxHeight: MediaQuery.sizeOf(context).height * 0.5),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: entries.length,
+                itemBuilder: (context, index) {
+                  final entry = entries[index];
+                  return ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(entry.title,
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      _controller.goToTocEntry(entry);
+                    },
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _openSearch() {
+    final controller = TextEditingController();
+    AppBottomSheet.show<void>(
+      context,
+      child: StatefulBuilder(
+        builder: (context, setSheetState) {
+          final state = _controller.state;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppBottomSheet.header(context, title: 'Suche im Buch'),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: const InputDecoration(
+                    hintText: 'Suchbegriff…',
+                    prefixIcon: Icon(AppIcons.searchInBook)),
+                onSubmitted: (query) {
+                  _controller.searchInBook(query);
+                  setSheetState(() {});
+                },
+              ),
+              AppSpacing.gapM,
+              if (state.searching)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.m),
+                  child: AppProgressIndicator(
+                    value: state.searchTotalUnits == 0
+                        ? null
+                        : state.searchDoneUnits / state.searchTotalUnits,
+                  ),
+                )
+              else if (controller.text.isNotEmpty &&
+                  state.searchResults.isEmpty)
+                Text('Keine Treffer.',
+                    style: Theme.of(context).textTheme.bodyMedium),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                    maxHeight: MediaQuery.sizeOf(context).height * 0.4),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: state.searchResults.length,
+                  itemBuilder: (context, index) {
+                    final hit = state.searchResults[index];
+                    return ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(hit.snippet,
+                          maxLines: 2, overflow: TextOverflow.ellipsis),
+                      subtitle: hit.chapterTitle == null
+                          ? null
+                          : Text(hit.chapterTitle!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        _controller.goToSearchHit(hit);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _openSettings() {
+    AppBottomSheet.show<void>(
+      context,
+      child: StatefulBuilder(
+        builder: (context, setSheetState) {
+          final settings = _controller.state.settings;
+          void update(ReaderSettings Function(ReaderSettings) fn) {
+            _controller.updateSettings(fn);
+            setSheetState(() {});
+          }
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppBottomSheet.header(context, title: 'Leseinstellungen'),
+              // -- Thèmes ------------------------------------------------
+              Row(
+                children: [
+                  for (final preset in ReaderTheme.presets.values)
+                    Padding(
+                      padding:
+                          const EdgeInsets.only(right: AppSpacing.s),
+                      child: _ThemeChip(
+                        theme: preset,
+                        selected: settings.themeId == preset.id,
+                        onTap: () =>
+                            update((s) => s.copyWith(themeId: preset.id)),
+                      ),
+                    ),
+                ],
+              ),
+              AppSpacing.gapXl,
+              _SettingSlider(
+                label: 'Schriftgröße',
+                value: settings.fontSize,
+                min: 10,
+                max: 32,
+                onChanged: (v) =>
+                    update((s) => s.copyWith(fontSize: v)),
+              ),
+              _SettingSlider(
+                label: 'Zeilenabstand',
+                value: settings.lineHeight,
+                min: 1.0,
+                max: 2.5,
+                onChanged: (v) =>
+                    update((s) => s.copyWith(lineHeight: v)),
+              ),
+              _SettingSlider(
+                label: 'Ränder',
+                value: settings.marginHorizontal,
+                min: 0,
+                max: 64,
+                onChanged: (v) =>
+                    update((s) => s.copyWith(marginHorizontal: v)),
+              ),
+              AppSpacing.gapL,
+              // -- Police -------------------------------------------------
+              Text('Schriftart',
+                  style: Theme.of(context).textTheme.bodySmall),
+              AppSpacing.gapS,
+              Wrap(
+                spacing: AppSpacing.s,
+                runSpacing: AppSpacing.s,
+                children: [
+                  for (final entry
+                      in ReaderSettings.availableFonts.entries)
+                    ChoiceChip(
+                      label: Text(entry.value),
+                      selected: settings.fontFamily == entry.key,
+                      onSelected: (_) => update(
+                          (s) => s.copyWith(fontFamily: entry.key)),
+                    ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ThemeChip extends StatelessWidget {
+  final ReaderTheme theme;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ThemeChip({
+    required this.theme,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: AppDurations.fast,
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: Color(theme.backgroundColor),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: selected
+                ? AppColors.of(context).accent
+                : Color(theme.textColor).withValues(alpha: 0.2),
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Center(
+          child: Text('Aa',
+              style: TextStyle(
+                  color: Color(theme.textColor),
+                  fontWeight: FontWeight.w600)),
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingSlider extends StatelessWidget {
+  final String label;
+  final double value;
+  final double min;
+  final double max;
+  final ValueChanged<double> onChanged;
+
+  const _SettingSlider({
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 110,
+          child: Text(label,
+              style: Theme.of(context).textTheme.bodySmall),
+        ),
+        Expanded(
+          child: Slider(
+            value: value.clamp(min, max),
+            min: min,
+            max: max,
+            onChanged: onChanged,
+          ),
+        ),
+      ],
+    );
+  }
+}

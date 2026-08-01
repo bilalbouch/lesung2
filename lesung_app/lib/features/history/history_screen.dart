@@ -1,0 +1,168 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:lesung/features/library/domain/entities/library_book.dart';
+import 'package:lesung/features/library/domain/entities/reading_history.dart';
+
+import '../../app/engine.dart';
+import '../../app/router.dart';
+import '../../components/app_states.dart';
+import '../../components/book_cover.dart';
+import '../../components/section_title.dart';
+import '../../design_system/tokens/app_colors.dart';
+import '../../design_system/tokens/app_radius.dart';
+import '../../design_system/tokens/app_spacing.dart';
+
+/// Verlauf — sessions de lecture groupées par jour.
+class HistoryScreen extends ConsumerStatefulWidget {
+  const HistoryScreen({super.key});
+
+  @override
+  ConsumerState<HistoryScreen> createState() => _HistoryScreenState();
+}
+
+class _HistoryScreenState extends ConsumerState<HistoryScreen> {
+  /// Titres des livres résolus (bookId -> livre).
+  final Map<String, LibraryBook?> _books = {};
+
+  @override
+  void initState() {
+    super.initState();
+    final engine = ref.read(engineProvider);
+    _resolveBooks(engine);
+    engine.library.stream.listen((_) => _resolveBooks(engine));
+  }
+
+  Future<void> _resolveBooks(Engine engine) async {
+    for (final entry in engine.library.state.history) {
+      if (_books.containsKey(entry.bookId)) continue;
+      _books[entry.bookId] =
+          await engine.libraryManager.bookById(entry.bookId);
+    }
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.read(engineProvider).library.state;
+    final entries = state.history;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Verlauf')),
+      body: state.loaded && entries.isEmpty
+          ? AppEmptyState.noHistory()
+          : ListView(
+              padding: AppSpacing.screen.copyWith(top: AppSpacing.l),
+              children: [
+                for (final group in _groupByDay(entries)) ...[
+                  SectionTitle(title: group.$1),
+                  AppSpacing.gapM,
+                  for (final entry in group.$2)
+                    _HistoryTile(
+                      entry: entry,
+                      book: _books[entry.bookId],
+                      onTap: () => _open(entry.bookId),
+                    ),
+                  AppSpacing.gapXl,
+                ],
+              ],
+            ),
+    );
+  }
+
+  /// Groupe les sessions par jour (plus récent en premier).
+  List<(String, List<ReadingHistoryEntry>)> _groupByDay(
+      List<ReadingHistoryEntry> entries) {
+    final sorted = [...entries]
+      ..sort((a, b) => b.openedAt.compareTo(a.openedAt));
+    final groups = <String, List<ReadingHistoryEntry>>{};
+    final order = <String>[];
+    final dayFormat = DateFormat.yMMMEd('de');
+    for (final entry in sorted) {
+      final label = dayFormat.format(entry.openedAt);
+      if (!groups.containsKey(label)) {
+        groups[label] = [];
+        order.add(label);
+      }
+      groups[label]!.add(entry);
+    }
+    return [for (final label in order) (label, groups[label]!)];
+  }
+
+  Future<void> _open(String bookId) async {
+    final book =
+        await ref.read(engineProvider).libraryManager.bookById(bookId);
+    if (book == null || !book.isReadable || !mounted) return;
+    context.push(AppRoutes.reader,
+        extra: ReaderBookArgs(
+            bookId: book.id,
+            filePath: book.filePath!,
+            title: book.title));
+  }
+}
+
+class _HistoryTile extends StatelessWidget {
+  final ReadingHistoryEntry entry;
+  final LibraryBook? book;
+  final VoidCallback onTap;
+
+  const _HistoryTile({
+    required this.entry,
+    required this.book,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    final duration = entry.durationSeconds;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.m),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.cardSmall,
+        child: Row(
+          children: [
+            BookCover(
+              title: book?.title ?? '?',
+              coverUrl: book?.coverUrl,
+              width: 44,
+            ),
+            AppSpacing.hGapM,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(book?.title ?? entry.bookId,
+                      style: textTheme.bodyLarge,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  Text(
+                    [
+                      DateFormat.Hm('de').format(entry.openedAt),
+                      if (duration != null && duration > 0)
+                        _formatDuration(duration),
+                    ].join(' · '),
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: colors.inkTertiary),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDuration(int seconds) {
+    final duration = Duration(seconds: seconds);
+    if (duration.inHours > 0) {
+      return '${duration.inHours} Std. ${duration.inMinutes % 60} Min.';
+    }
+    return '${duration.inMinutes} Min.';
+  }
+}
