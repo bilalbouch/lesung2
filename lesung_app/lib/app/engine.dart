@@ -1,5 +1,7 @@
 import 'dart:io';
-
+import 'package:lesung/features/sources/data/open_library/open_library_source.dart';
+import 'package:lesung/features/sources/data/gutendex/gutendex_source.dart';
+import 'package:lesung/features/sources/data/google_books/google_books_source.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lesung/core/events/event_bus.dart';
 import 'package:lesung/features/downloads/data/download_manager.dart';
@@ -64,6 +66,9 @@ class Engine {
     );
     await annasArchive.initialize();
     registry.register(annasArchive);
+    registry.register(OpenLibrarySource());
+    registry.register(GutendexSource());
+    registry.register(GoogleBooksSource());
     // Cache mémoire : ttl 5 min, invalidation automatique.
     final search = SearchController(
         SearchRepositoryImpl(SearchService(registry),
