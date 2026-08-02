@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../design_system/tokens/app_icons.dart';
-import '../design_system/tokens/app_spacing.dart';
-import '../design_system/tokens/app_typography.dart';
 import 'action_button.dart';
-import 'app_animations.dart';
 import 'app_progress_indicator.dart';
 
 /// ÉTATS PREMIUM — aucun écran vide « mort ».
@@ -102,12 +99,13 @@ class AppEmptyState extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
-        child: AppAnimations.fadeIn(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
+        padding: const EdgeInsets.all(48),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _AnimatedItem(
+              delay: const Duration(milliseconds: 0),
+              child: Container(
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
@@ -116,25 +114,33 @@ class AppEmptyState extends StatelessWidget {
                 ),
                 child: Icon(icon, color: colors.primary, size: 30),
               ),
-              const SizedBox(height: 32),
-              Text(title,
+            ),
+            const SizedBox(height: 32),
+            _AnimatedItem(
+              delay: const Duration(milliseconds: 100),
+              child: Text(title,
                   style: textTheme.titleLarge, textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              Text(
+            ),
+            const SizedBox(height: 16),
+            _AnimatedItem(
+              delay: const Duration(milliseconds: 200),
+              child: Text(
                 message,
-                style: textTheme.bodyMedium
-                    ?.copyWith(height: AppTypography.heightReading),
+                style: textTheme.bodyMedium?.copyWith(height: 1.6),
                 textAlign: TextAlign.center,
               ),
-              if (actionLabel != null && onAction != null) ...[
-                const SizedBox(height: 32),
-                ActionButton(
+            ),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 32),
+              _AnimatedItem(
+                delay: const Duration(milliseconds: 300),
+                child: ActionButton(
                     label: actionLabel!,
                     variant: ActionButtonVariant.secondary,
                     onPressed: onAction),
-              ],
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );
@@ -180,6 +186,38 @@ class AppErrorState extends StatelessWidget {
       message: message,
       actionLabel: onRetry == null ? null : 'Erneut versuchen',
       onAction: onRetry,
+    );
+  }
+}
+
+/// Widget interne pour animer les items de l'empty state avec stagger.
+class _AnimatedItem extends StatelessWidget {
+  final Widget child;
+  final Duration delay;
+
+  const _AnimatedItem({required this.child, required this.delay});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: Future.delayed(delay),
+      builder: (context, snapshot) {
+        final isReady = snapshot.connectionState == ConnectionState.done;
+        return TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.0, end: isReady ? 1.0 : 0.0),
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+          builder: (context, value, _) {
+            return Opacity(
+              opacity: value,
+              child: Transform.translate(
+                offset: Offset(0, (1 - value) * 16),
+                child: child,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -65,8 +65,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       body: isEmpty
           ? AppEmptyState.emptyLibrary(
               onExplore: () => context.go(AppRoutes.search))
-          : ListView(
-              children: [
+          : RefreshIndicator(
+              onRefresh: _refresh,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Row(
@@ -131,7 +134,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 const SizedBox(height: 48),
               ],
             ),
+          ),
     );
+  }
+
+  Future<void> _refresh() async {
+    // Force rebuild pour rafraichir depuis le state actuel
+    setState(() {});
+    await Future.delayed(const Duration(milliseconds: 800));
   }
 
   void _open(String bookId) async {
