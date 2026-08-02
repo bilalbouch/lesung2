@@ -16,6 +16,7 @@ import '../../design_system/tokens/app_motion.dart';
 import '../../features/reader/reader_text_provider.dart';
 import '../../features/sync/sync_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../../services/cloud_sync_service.dart';
 import 'reader_page_content.dart';
 
 /// Reader premium — surface de lecture épurée : le texte est l'élément
