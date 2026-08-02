@@ -220,3 +220,44 @@ class LuminaBookCard extends StatelessWidget {
 }
 
 enum LuminaCardLayout { grid, list }
+
+class _HoverCard extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final bool isDark;
+
+  // ignore: unused_element_parameter
+  const _HoverCard({required this.child, this.onTap, required this.isDark});
+
+  @override
+  State<_HoverCard> createState() => _HoverCardState();
+}
+
+class _HoverCardState extends State<_HoverCard> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final shadow = _hovered
+        ? (widget.isDark ? LuminaShadows.darkLevel2 : LuminaShadows.level2)
+        : (widget.isDark ? LuminaShadows.darkLevel1 : LuminaShadows.level1);
+
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(LuminaRadius.l),
+            boxShadow: shadow,
+          ),
+          transform: _hovered ? Matrix4.translationValues(0, -2, 0) : Matrix4.identity(),
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+}

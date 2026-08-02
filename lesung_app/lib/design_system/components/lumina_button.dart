@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import '../tokens/lumina_colors.dart';
 import '../tokens/lumina_radius.dart';
+import '../animations/animated_press.dart';
 
 /// Boutons Lumina — Primary, Secondary, Ghost, Icon
 class LuminaButton extends StatelessWidget {
@@ -40,42 +41,52 @@ class LuminaButton extends StatelessWidget {
 
     switch (variant) {
       case LuminaButtonVariant.primary:
-        return ElevatedButton(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isDark ? LuminaColorsDark.primary : LuminaColors.primary,
-            foregroundColor: LuminaColors.textInverse,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(LuminaRadius.s),
+        return AnimatedPress(
+          onTap: onPressed,
+          child: ElevatedButton(
+            onPressed: onPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDark ? LuminaColorsDark.primary : LuminaColors.primary,
+              foregroundColor: LuminaColors.textInverse,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(LuminaRadius.s),
+              ),
+              elevation: 0,
             ),
+            child: child,
           ),
-          child: child,
         );
       case LuminaButtonVariant.secondary:
-        return OutlinedButton(
-          onPressed: onPressed,
-          style: OutlinedButton.styleFrom(
-            foregroundColor: isDark ? LuminaColorsDark.textPrimary : LuminaColors.textPrimary,
-            side: BorderSide(
-              color: isDark ? LuminaColorsDark.border : LuminaColors.border,
-              width: 1.5,
+        return AnimatedPress(
+          onTap: onPressed,
+          child: OutlinedButton(
+            onPressed: onPressed,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: isDark ? LuminaColorsDark.textPrimary : LuminaColors.textPrimary,
+              side: BorderSide(
+                color: isDark ? LuminaColorsDark.border : LuminaColors.border,
+                width: 1.5,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(LuminaRadius.s),
+              ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(LuminaRadius.s),
-            ),
+            child: child,
           ),
-          child: child,
         );
       case LuminaButtonVariant.ghost:
-        return TextButton(
-          onPressed: onPressed,
-          style: TextButton.styleFrom(
-            foregroundColor: isDark ? LuminaColorsDark.primary : LuminaColors.primary,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        return AnimatedPress(
+          onTap: onPressed,
+          child: TextButton(
+            onPressed: onPressed,
+            style: TextButton.styleFrom(
+              foregroundColor: isDark ? LuminaColorsDark.primary : LuminaColors.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            child: child,
           ),
-          child: child,
         );
     }
   }
