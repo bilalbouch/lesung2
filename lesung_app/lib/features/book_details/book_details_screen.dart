@@ -104,7 +104,8 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
             child: Hero(
               tag: 'cover-${book.dedupKey}',
               child: BookCover(
-                  title: book.title, coverUrl: book.coverUrl, width: 180),
+                  title: book.title, coverUrl: book.coverUrl, width: 180,
+                  heroTag: book.dedupKey,),
             ),
           ),
           const SizedBox(height: 32),

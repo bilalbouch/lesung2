@@ -1,9 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../design_system/tokens/app_colors.dart';
-import '../design_system/tokens/app_radius.dart';
-import '../design_system/tokens/app_shadows.dart';
+import '../design_system/tokens/lumina_radius.dart';
+
 
 /// Couverture de livre — l'ÉLÉMENT PRINCIPAL du design.
 ///
@@ -23,21 +22,24 @@ class BookCover extends StatelessWidget {
     required this.title,
     this.coverUrl,
     this.width = 120,
+    this.heroTag,
   });
+
+  final String? heroTag;
 
   double get height => width / aspectRatio;
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    final borderRadius = AppRadius.cover;
+    final colors = Theme.of(context).colorScheme;
+    final borderRadius = BorderRadius.circular(LuminaRadius.l);
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
         borderRadius: borderRadius,
-        boxShadow: AppShadows.cover(colors),
-        color: colors.accentSubtle,
+        boxShadow: const [BoxShadow(color: Color(0x1A000000), blurRadius: 12, offset: Offset(0, 4))],
+        color: colors.primaryContainer,
       ),
       clipBehavior: Clip.antiAlias,
       child: coverUrl != null && coverUrl!.isNotEmpty
@@ -59,7 +61,7 @@ class _Monogram extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     final initials = title
         .trim()
         .split(RegExp(r'\s+'))
@@ -70,7 +72,7 @@ class _Monogram extends StatelessWidget {
       child: Text(
         initials.isEmpty ? '?' : initials,
         style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-              color: colors.accent,
+              color: colors.primary,
               fontWeight: FontWeight.w600,
             ),
       ),
