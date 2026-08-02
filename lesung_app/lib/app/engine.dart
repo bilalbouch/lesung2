@@ -64,7 +64,8 @@ class Engine {
       instanceStore: AnnaArchiveInstanceStore(
           Directory('${support.path}/annas_archive')),
     );
-    await annasArchive.initialize();
+    // Initialisation non-bloquante — le source sera prêt quand il sera prêt
+    annasArchive.initialize().then((_) {}).catchError((_) {});
     registry.register(annasArchive);
     registry.register(OpenLibrarySource());
     registry.register(GutendexSource());
