@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,12 +20,21 @@ class FavoritesScreen extends ConsumerStatefulWidget {
 }
 
 class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
+  late final StreamSubscription<dynamic> _librarySubscription;
+
   @override
   void initState() {
     super.initState();
-    ref.read(engineProvider).library.stream.listen((_) {
+    _librarySubscription =
+        ref.read(engineProvider).library.stream.listen((_) {
       if (mounted) setState(() {});
     });
+  }
+
+  @override
+  void dispose() {
+    unawaited(_librarySubscription.cancel());
+    super.dispose();
   }
 
   @override

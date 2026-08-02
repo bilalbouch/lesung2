@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -29,13 +31,21 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
   /// Nombre de livres et couvertures par collection (chargés une fois,
   /// rafraîchis à chaque événement de bibliothèque).
   final Map<String, List<LibraryBook>> _booksByCollection = {};
+  late final StreamSubscription<dynamic> _librarySubscription;
 
   @override
   void initState() {
     super.initState();
     final engine = ref.read(engineProvider);
-    _reload(engine);
-    engine.library.stream.listen((_) => _reload(engine));
+    unawaited(_reload(engine));
+    _librarySubscription =
+        engine.library.stream.listen((_) => _reload(engine));
+  }
+
+  @override
+  void dispose() {
+    unawaited(_librarySubscription.cancel());
+    super.dispose();
   }
 
   Future<void> _reload(Engine engine) async {
@@ -175,13 +185,21 @@ class CollectionDetailScreen extends ConsumerStatefulWidget {
 class _CollectionDetailScreenState
     extends ConsumerState<CollectionDetailScreen> {
   List<LibraryBook> _books = const [];
+  late final StreamSubscription<dynamic> _librarySubscription;
 
   @override
   void initState() {
     super.initState();
     final engine = ref.read(engineProvider);
-    _reload(engine);
-    engine.library.stream.listen((_) => _reload(engine));
+    unawaited(_reload(engine));
+    _librarySubscription =
+        engine.library.stream.listen((_) => _reload(engine));
+  }
+
+  @override
+  void dispose() {
+    unawaited(_librarySubscription.cancel());
+    super.dispose();
   }
 
   Future<void> _reload(Engine engine) async {

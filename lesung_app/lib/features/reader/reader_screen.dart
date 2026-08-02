@@ -32,9 +32,12 @@ class ReaderScreen extends ConsumerStatefulWidget {
   ConsumerState<ReaderScreen> createState() => _ReaderScreenState();
 }
 
-class _ReaderScreenState extends ConsumerState<ReaderScreen> {
+class _ReaderScreenState extends ConsumerState<ReaderScreen>
+    with WidgetsBindingObserver {
   late final ReaderController _controller;
+  late final StreamSubscription<ReaderViewState> _readerSubscription;
   bool _chromeVisible = false;
+  bool _savingLifecycleState = false;
 
   /// Texte de l'unité courante (chargé à chaque changement d'unité).
   String? _unitText;
@@ -45,9 +48,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final engine = ref.read(engineProvider);
     _controller = ReaderController(manager: engine.createReaderManager());
-    _controller.stream.listen((state) {
+    _readerSubscription = _controller.stream.listen((state) {
       if (!mounted) return;
       final unit = state.position?.unitIndex;
       if (state.status == ReaderStatus.ready && unit != _loadedUnit) {
@@ -185,10 +189,40 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.detached) {
+      unawaited(_saveForLifecycleChange());
+    }
+  }
+
+  Future<void> _saveForLifecycleChange() async {
+    if (_savingLifecycleState) return;
+    _savingLifecycleState = true;
+    try {
+      await Future.wait([
+        _controller.saveNow(),
+        _saveCloudProgress(),
+        _saveCloudBookmarks(),
+      ]);
+    } catch (_) {
+      // Le prochain auto-save réessaiera sans interrompre le cycle de vie.
+    } finally {
+      _savingLifecycleState = false;
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_readerSubscription.cancel());
     final engine = ref.read(engineProvider);
-    engine.libraryManager.closeReading(widget.book.bookId);
-    _controller.dispose();
+    unawaited(engine.libraryManager.closeReading(widget.book.bookId));
+    unawaited(_saveCloudProgress());
+    unawaited(_saveCloudBookmarks());
+    unawaited(_controller.dispose());
     super.dispose();
   }
 

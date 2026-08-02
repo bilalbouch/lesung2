@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,6 +25,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late final ReaderController _readerController;
+  final List<StreamSubscription<dynamic>> _subscriptions = [];
 
   @override
   void initState() {
@@ -30,18 +33,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final engine = ref.read(engineProvider);
     _readerController =
         ReaderController(manager: engine.createReaderManager());
-    _readerController.stream.listen((_) {
+    _subscriptions.add(_readerController.stream.listen((_) {
       if (mounted) setState(() {});
-    });
-    _readerController.init();
-    engine.library.stream.listen((_) {
+    }));
+    unawaited(_readerController.init());
+    _subscriptions.add(engine.library.stream.listen((_) {
       if (mounted) setState(() {});
-    });
+    }));
   }
 
   @override
   void dispose() {
-    _readerController.dispose();
+    for (final subscription in _subscriptions) {
+      unawaited(subscription.cancel());
+    }
+    unawaited(_readerController.dispose());
     super.dispose();
   }
 

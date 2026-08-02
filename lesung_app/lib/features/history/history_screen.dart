@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,13 +26,21 @@ class HistoryScreen extends ConsumerStatefulWidget {
 class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   /// Titres des livres résolus (bookId -> livre).
   final Map<String, LibraryBook?> _books = {};
+  late final StreamSubscription<dynamic> _librarySubscription;
 
   @override
   void initState() {
     super.initState();
     final engine = ref.read(engineProvider);
-    _resolveBooks(engine);
-    engine.library.stream.listen((_) => _resolveBooks(engine));
+    unawaited(_resolveBooks(engine));
+    _librarySubscription =
+        engine.library.stream.listen((_) => _resolveBooks(engine));
+  }
+
+  @override
+  void dispose() {
+    unawaited(_librarySubscription.cancel());
+    super.dispose();
   }
 
   Future<void> _resolveBooks(Engine engine) async {
