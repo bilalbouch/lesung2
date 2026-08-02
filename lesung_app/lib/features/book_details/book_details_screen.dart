@@ -11,9 +11,7 @@ import '../../components/action_button.dart';
 import '../../components/app_snackbars.dart';
 import '../../components/book_cover.dart';
 import '../../components/favorite_button.dart';
-import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_icons.dart';
-import '../../design_system/tokens/app_spacing.dart';
 import '../../l10n/generated/app_localizations.dart';
 
 /// Détails du livre — couverture en héros, métadonnées discrètes,
@@ -79,7 +77,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final book = widget.item.book;
 
@@ -100,7 +98,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
             onPressed: () => context.pop()),
       ),
       body: ListView(
-        padding: AppSpacing.screen,
+        padding: const EdgeInsets.all(20),
         children: [
           Center(
             child: Hero(
@@ -109,42 +107,42 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
                   title: book.title, coverUrl: book.coverUrl, width: 180),
             ),
           ),
-          AppSpacing.gapXl,
+          const SizedBox(height: 32),
           Text(book.title,
               style: textTheme.headlineLarge, textAlign: TextAlign.center),
           if (book.author != null && book.author!.isNotEmpty) ...[
-            AppSpacing.gapS,
+            const SizedBox(height: 12),
             Text(book.author!,
                 style: textTheme.titleMedium
-                    ?.copyWith(color: colors.inkSecondary),
+                    ?.copyWith(color: colors.onSurfaceVariant),
                 textAlign: TextAlign.center),
           ],
-          AppSpacing.gapXl,
+          const SizedBox(height: 32),
           Wrap(
             alignment: WrapAlignment.center,
-            spacing: AppSpacing.s,
-            runSpacing: AppSpacing.s,
+            spacing: 12,
+            runSpacing: 12,
             children: [
               for (final chip in meta)
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.m, vertical: AppSpacing.xs),
+                      horizontal: 16, vertical: 4),
                   decoration: BoxDecoration(
-                    color: colors.surfaceAlt,
+                    color: colors.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(chip, style: textTheme.bodySmall),
                 ),
             ],
           ),
-          AppSpacing.gapXxl,
+          const SizedBox(height: 48),
           ActionButton(
             label: _downloading ? l10n.bookDetailsDownloading : l10n.bookDetailsDownload,
             icon: AppIcons.download,
             expanded: true,
             onPressed: _downloading ? null : _startDownload,
           ),
-          AppSpacing.gapM,
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -155,13 +153,13 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
             ],
           ),
           if (book.description != null && book.description!.isNotEmpty) ...[
-            AppSpacing.gapXxl,
+            const SizedBox(height: 48),
             Text(l10n.bookDetailsDescription, style: textTheme.titleLarge),
-            AppSpacing.gapM,
+            const SizedBox(height: 16),
             Text(book.description!,
                 style: textTheme.bodyLarge?.copyWith(height: 1.6)),
           ],
-          AppSpacing.gapXxl,
+          const SizedBox(height: 48),
         ],
       ),
     );
