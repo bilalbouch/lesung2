@@ -74,9 +74,9 @@ async function main() {
     ]);
   }
 
+  console.log(`Local: http://localhost:${port}`);
   await runFlutter([
     "run",
-
     "-d",
     "web-server",
     "--web-hostname",
