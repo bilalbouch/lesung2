@@ -80,8 +80,11 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final book = widget.item.book;
+    final supportsDownloads =
+        ref.read(engineProvider).supportsManagedDownloads;
 
     final meta = [
+
       if (book.format.name != 'unknown') book.format.name.toUpperCase(),
       if (book.language != null && book.language!.isNotEmpty)
         book.language!.toUpperCase(),
@@ -141,10 +144,22 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
             label: _downloading ? l10n.bookDetailsDownloading : l10n.bookDetailsDownload,
             icon: AppIcons.download,
             expanded: true,
-            onPressed: _downloading ? null : _startDownload,
+            onPressed:
+                _downloading || !supportsDownloads ? null : _startDownload,
           ),
+          if (!supportsDownloads) ...[
+            const SizedBox(height: 10),
+            Text(
+              l10n.bookDetailsWebDownloadUnavailable,
+              style: textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
           const SizedBox(height: 16),
           Row(
+
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FavoriteButton(
@@ -172,7 +187,12 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
     final engine = ref.read(engineProvider);
     final book = widget.item.book;
     try {
+      final downloadManager = engine.downloadManager;
+      if (downloadManager == null) {
+        throw StateError(l10n.bookDetailsWebDownloadUnavailable);
+      }
       if (book.refs.isEmpty) {
+
         throw StateError('Keine Quelle für dieses Buch.');
       }
       final ref0 = book.refs.first;
@@ -184,9 +204,10 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
       if (links.isEmpty) {
         throw StateError('Keine Download-Links gefunden.');
       }
-      await engine.downloadManager.enqueue(DownloadTask(
+      await downloadManager.enqueue(DownloadTask(
         id: book.dedupKey,
         title: book.title,
+
         author: book.author,
         coverUrl: book.coverUrl,
         format: book.format,

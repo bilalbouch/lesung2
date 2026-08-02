@@ -111,6 +111,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get bookDetailsDownloading => 'Téléchargement…';
 
   @override
+  String get bookDetailsWebDownloadUnavailable =>
+      'Le téléchargement et la lecture hors ligne sont disponibles dans les applications Android et iOS.';
+
+  @override
   String get bookDetailsDescription => 'Description';
 
   @override

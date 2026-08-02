@@ -298,6 +298,12 @@ abstract class AppLocalizations {
   /// **'Downloading…'**
   String get bookDetailsDownloading;
 
+  /// No description provided for @bookDetailsWebDownloadUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads and offline reading are available in the Android and iOS apps.'**
+  String get bookDetailsWebDownloadUnavailable;
+
   /// No description provided for @bookDetailsDescription.
   ///
   /// In en, this message translates to:

@@ -40,10 +40,12 @@
 
   "bookDetailsDownload": "Télécharger",
   "bookDetailsDownloading": "Téléchargement…",
+  "bookDetailsWebDownloadUnavailable": "Le téléchargement et la lecture hors ligne sont disponibles dans les applications Android et iOS.",
   "bookDetailsDescription": "Description",
   "bookDetailsAddedToFavorites": "Ajouté aux favoris",
   "bookDetailsRemovedFromFavorites": "Retiré des favoris",
   "bookDetailsDownloadStarted": "Téléchargement démarré.",
+
   "bookDetailsDownloadFailed": "Échec du téléchargement : {error}",
 
   "readerTocTitle": "Table des matières",

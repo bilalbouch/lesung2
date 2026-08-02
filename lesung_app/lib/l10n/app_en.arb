@@ -41,10 +41,12 @@
 
   "bookDetailsDownload": "Download",
   "bookDetailsDownloading": "Downloading…",
+  "bookDetailsWebDownloadUnavailable": "Downloads and offline reading are available in the Android and iOS apps.",
   "bookDetailsDescription": "Description",
   "bookDetailsAddedToFavorites": "Added to favorites",
   "bookDetailsRemovedFromFavorites": "Removed from favorites",
   "bookDetailsDownloadStarted": "Download started.",
+
   "bookDetailsDownloadFailed": "Download failed: {error}",
 
   "readerTocTitle": "Table of contents",

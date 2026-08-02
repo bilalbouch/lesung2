@@ -40,10 +40,12 @@
 
   "bookDetailsDownload": "Herunterladen",
   "bookDetailsDownloading": "Wird geladen…",
+  "bookDetailsWebDownloadUnavailable": "Downloads und Offline-Lesen sind in den Android- und iOS-Apps verfügbar.",
   "bookDetailsDescription": "Beschreibung",
   "bookDetailsAddedToFavorites": "Zu Favoriten hinzugefügt",
   "bookDetailsRemovedFromFavorites": "Aus Favoriten entfernt",
   "bookDetailsDownloadStarted": "Download gestartet.",
+
   "bookDetailsDownloadFailed": "Download fehlgeschlagen: {error}",
 
   "readerTocTitle": "Inhaltsverzeichnis",

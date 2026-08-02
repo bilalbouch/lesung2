@@ -112,6 +112,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get bookDetailsDownloading => 'Wird geladen…';
 
   @override
+  String get bookDetailsWebDownloadUnavailable =>
+      'Downloads und Offline-Lesen sind in den Android- und iOS-Apps verfügbar.';
+
+  @override
   String get bookDetailsDescription => 'Beschreibung';
 
   @override

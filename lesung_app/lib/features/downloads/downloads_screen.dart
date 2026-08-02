@@ -24,14 +24,14 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
   void initState() {
     super.initState();
     final downloads = ref.read(engineProvider).downloads;
-    downloads.onChanged = () {
+    downloads?.onChanged = () {
       if (mounted) setState(() {});
     };
   }
 
   @override
   void dispose() {
-    ref.read(engineProvider).downloads.onChanged = null;
+    ref.read(engineProvider).downloads?.onChanged = null;
     super.dispose();
   }
 
@@ -41,7 +41,15 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
     final downloads = engine.downloads;
     final l10n = AppLocalizations.of(context)!;
 
+    if (downloads == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.downloadsTitle)),
+        body: AppEmptyState.noDownloads(context: context),
+      );
+    }
+
     final active = downloads.active;
+
     final failed = downloads.failed;
     final completed = downloads.completed;
 
@@ -89,12 +97,15 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
   }
 
   Widget _cardFor(DownloadTask task, Engine engine) {
+    final downloads = engine.downloads!;
+    final downloadManager = engine.downloadManager!;
     final progress =
-        engine.downloads.progressFor(task.id)?.progress ?? task.progress;
+        downloads.progressFor(task.id)?.progress ?? task.progress;
     final status = task.status;
-    final speed = engine.downloads.progressFor(task.id);
+    final speed = downloads.progressFor(task.id);
 
     if (status == DownloadStatus.completed) {
+
       return DownloadCard(
         title: task.title,
         author: task.author,
@@ -104,8 +115,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
         onOpen: () => context.push(AppRoutes.reader,
             extra: ReaderBookArgs(
                 bookId: task.id,
-                filePath:
-                    engine.downloadManager.storage.finalFileFor(task).path,
+                filePath: downloadManager.storage.finalFileFor(task).path,
                 title: task.title)),
       );
     }
@@ -117,10 +127,11 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
         state: DownloadCardState.failed,
         progress: progress,
         subtitle: task.errorMessage,
-        onRetry: () => engine.downloadManager.retry(task.id),
-        onCancel: () => engine.downloadManager.remove(task.id),
+        onRetry: () => downloadManager.retry(task.id),
+        onCancel: () => downloadManager.remove(task.id),
       );
     }
+
     final paused = status == DownloadStatus.paused;
     return DownloadCard(
       title: task.title,
@@ -129,9 +140,9 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
       state: paused ? DownloadCardState.paused : DownloadCardState.active,
       progress: progress,
       subtitle: _subtitle(task, progress, speed),
-      onPause: paused ? null : () => engine.downloadManager.pause(task.id),
-      onResume: paused ? () => engine.downloadManager.resume(task.id) : null,
-      onCancel: () => engine.downloadManager.cancel(task.id),
+      onPause: paused ? null : () => downloadManager.pause(task.id),
+      onResume: paused ? () => downloadManager.resume(task.id) : null,
+      onCancel: () => downloadManager.cancel(task.id),
     );
   }
 
