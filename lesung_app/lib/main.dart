@@ -8,6 +8,7 @@ import 'design_system/tokens/app_motion.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/cloud_sync_service.dart';
 import 'design_system/lumina_theme.dart';
+import 'design_system/tokens/lumina_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,9 +80,9 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       body: Center(
         child: TweenAnimationBuilder<double>(
           tween: Tween(begin: 0, end: 1),
@@ -94,12 +95,12 @@ class SplashScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const BrandLogo(size: 88),
-              AppSpacing.gapXl,
+              const SizedBox(height: 32),
               Text(
                 'Lesung',
                 style: Theme.of(context).textTheme.displayLarge,
               ),
-              AppSpacing.gapS,
+              const SizedBox(height: 12),
               Text(
                 'Deine Bibliothek.',
                 style: Theme.of(context).textTheme.bodyMedium,
@@ -120,10 +121,9 @@ class BrandLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
     return CustomPaint(
       size: Size.square(size),
-      painter: _BrandLogoPainter(colors.accent),
+      painter: _BrandLogoPainter(LuminaColors.accent),
     );
   }
 }
