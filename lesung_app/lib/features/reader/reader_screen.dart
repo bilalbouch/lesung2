@@ -36,6 +36,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   /// Texte de l'unité courante (chargé à chaque changement d'unité).
   String? _unitText;
   int? _loadedUnit;
+  bool _cloudRestorePending = true;
 
   @override
   void initState() {
@@ -47,16 +48,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       final unit = state.position?.unitIndex;
       if (state.status == ReaderStatus.ready && unit != _loadedUnit) {
         _loadUnitText(unit ?? 0);
-        final syncState = ref.read(syncControllerProvider);
-        final pos = state.position;
-        if (syncState.enabled && pos != null) {
-          ref.read(cloudSyncServiceProvider).saveProgress(
-                bookId: widget.book.bookId,
-                unitIndex: pos.unitIndex,
-                progress: pos.progress,
-                chapterTitle: pos.chapterTitle,
-              );
-        }
+        if (!_cloudRestorePending) _saveCloudProgress();
       }
       setState(() {});
     });
@@ -70,6 +62,51 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     // jamais d'événement lui-même (single-writer).
     await engine.libraryManager.openReading(widget.book.bookId);
     await _controller.openBook(widget.book.filePath);
+
+    final syncController = ref.read(syncControllerProvider.notifier);
+    await syncController.ready;
+    if (!mounted) return;
+
+    final syncState = ref.read(syncControllerProvider);
+    if (syncState.enabled && _controller.state.status == ReaderStatus.ready) {
+      final cloud = await ref
+          .read(cloudSyncServiceProvider)
+          .getProgress(widget.book.bookId);
+      if (!mounted) return;
+      if (!ref.read(syncControllerProvider).enabled) {
+        _cloudRestorePending = false;
+        return;
+      }
+
+      final local = _controller.state.position;
+      final unitCount = _controller.manager.reader?.unitCount ?? 0;
+      if (cloud != null &&
+          local != null &&
+          cloud.canRestore(
+            localProgress: local.progress,
+            unitCount: unitCount,
+          )) {
+        _controller.goToUnit(cloud.unitIndex);
+        await _controller.manager.saveNow();
+        if (!mounted) return;
+      }
+    }
+
+    _cloudRestorePending = false;
+    await _saveCloudProgress();
+  }
+
+  Future<void> _saveCloudProgress() async {
+    final syncState = ref.read(syncControllerProvider);
+    final position = _controller.state.position;
+    if (!syncState.enabled || position == null) return;
+
+    await ref.read(cloudSyncServiceProvider).saveProgress(
+          bookId: widget.book.bookId,
+          unitIndex: position.unitIndex,
+          progress: position.progress,
+          chapterTitle: position.chapterTitle,
+        );
   }
 
   Future<void> _loadUnitText(int unitIndex) async {

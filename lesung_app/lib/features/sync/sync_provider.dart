@@ -23,9 +23,10 @@ class SyncState {
 
 class SyncController extends StateNotifier<SyncState> {
   final CloudSyncService _service;
+  late final Future<void> ready;
 
   SyncController(this._service) : super(const SyncState()) {
-    _restore();
+    ready = _restore();
   }
 
   Future<void> _restore() async {

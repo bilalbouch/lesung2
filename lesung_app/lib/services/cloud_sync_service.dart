@@ -2,6 +2,49 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+class CloudReadingProgress {
+  final int unitIndex;
+  final double progress;
+  final String? chapterTitle;
+
+  const CloudReadingProgress({
+    required this.unitIndex,
+    required this.progress,
+    this.chapterTitle,
+  });
+
+  bool canRestore({required double localProgress, required int unitCount}) {
+    return unitIndex < unitCount && progress > localProgress;
+  }
+
+  static CloudReadingProgress? fromMap(Map<String, dynamic>? data) {
+    final unitIndex = data?['unitIndex'];
+    final progress = data?['progress'];
+    final chapterTitle = data?['chapterTitle'];
+    if (unitIndex is! num ||
+        progress is! num ||
+        (chapterTitle != null && chapterTitle is! String)) {
+      return null;
+    }
+
+    final parsedUnit = unitIndex.toInt();
+    final parsedProgress = progress.toDouble();
+    if (unitIndex != parsedUnit ||
+        parsedUnit < 0 ||
+        !parsedProgress.isFinite ||
+        parsedProgress < 0 ||
+        parsedProgress > 1) {
+      return null;
+    }
+
+    return CloudReadingProgress(
+      unitIndex: parsedUnit,
+      progress: parsedProgress,
+      chapterTitle: chapterTitle as String?,
+    );
+  }
+}
+
 /// Synchronisation Firebase explicitement activée par l'utilisateur.
 /// L'application reste entièrement locale lorsque Firebase est absent ou
 /// lorsque la sauvegarde cloud n'a pas été autorisée.
@@ -76,7 +119,7 @@ class CloudSyncService {
     } catch (_) {}
   }
 
-  Future<Map<String, dynamic>?> getProgress(String bookId) async {
+  Future<CloudReadingProgress?> getProgress(String bookId) async {
     final firestore = _firestore;
     final uid = _uid;
     if (firestore == null || uid == null) return null;
@@ -87,7 +130,7 @@ class CloudSyncService {
           .collection('progress')
           .doc(bookId)
           .get();
-      return doc.data();
+      return CloudReadingProgress.fromMap(doc.data());
     } catch (_) {
       return null;
     }
