@@ -412,36 +412,6 @@ abstract class AppLocalizations {
   /// **'Library'**
   String get settingsLibrarySection;
 
-  /// No description provided for @settingsCloudSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Account and sync'**
-  String get settingsCloudSection;
-
-  /// No description provided for @settingsCloudTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Firebase backup'**
-  String get settingsCloudTitle;
-
-  /// No description provided for @settingsCloudLocal.
-  ///
-  /// In en, this message translates to:
-  /// **'Off — your data stays on this device.'**
-  String get settingsCloudLocal;
-
-  /// No description provided for @settingsCloudEnabled.
-  ///
-  /// In en, this message translates to:
-  /// **'On — your reading progress is backed up.'**
-  String get settingsCloudEnabled;
-
-  /// No description provided for @settingsCloudError.
-  ///
-  /// In en, this message translates to:
-  /// **'Firebase is not configured yet.'**
-  String get settingsCloudError;
-
   /// No description provided for @settingsReadingStyle.
   ///
   /// In en, this message translates to:

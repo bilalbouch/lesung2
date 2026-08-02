@@ -10,7 +10,6 @@ import '../../components/section_title.dart';
 import '../../design_system/tokens/app_icons.dart';
 import '../../design_system/tokens/lumina_radius.dart';
 import '../../design_system/tokens/app_spacing.dart';
-import '../../features/sync/sync_provider.dart';
 import '../../main.dart' show BrandLogo;
 import '../../l10n/generated/app_localizations.dart';
 
@@ -53,8 +52,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final engine = ref.read(engineProvider);
     final settings = _readerController.state.settings;
     final stats = engine.library.state.stats;
-    final syncState = ref.watch(syncEnabledProvider);
-    final syncEnabled = syncState.asData?.value ?? false;
 
     return Scaffold(
       body: SafeArea(
@@ -81,39 +78,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: AppIcons.history,
               title: l10n.libraryHistory,
               onTap: () => context.push(AppRoutes.history),
-            ),
-            AppSpacing.gapXxl,
-
-            SectionTitle(title: l10n.settingsCloudSection),
-            AppSpacing.gapM,
-            Container(
-              decoration: BoxDecoration(
-                color: colors.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(LuminaRadius.l),
-              ),
-              child: SwitchListTile.adaptive(
-                value: syncEnabled,
-                onChanged: syncState.isLoading
-                    ? null
-                    : ref.read(syncEnabledProvider.notifier).setEnabled,
-                title: Text(l10n.settingsCloudTitle),
-                subtitle: Text(
-                  syncState.hasError
-                      ? l10n.settingsCloudError
-                      : syncEnabled
-                          ? l10n.settingsCloudEnabled
-                          : l10n.settingsCloudLocal,
-                ),
-                secondary: syncState.isLoading
-                    ? const SizedBox.square(
-                        dimension: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Icon(
-                        syncEnabled ? Icons.cloud_done_outlined : Icons.cloud_off_outlined,
-                        color: syncEnabled ? colors.primary : colors.onSurfaceVariant,
-                      ),
-              ),
             ),
             AppSpacing.gapXxl,
 
