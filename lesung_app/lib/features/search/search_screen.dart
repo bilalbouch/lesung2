@@ -11,9 +11,7 @@ import '../../components/app_progress_indicator.dart';
 import '../../components/app_search_bar.dart';
 import '../../components/app_states.dart';
 import '../../components/book_cover.dart';
-import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_icons.dart';
-import '../../design_system/tokens/app_spacing.dart';
 
 /// Recherche — la fonctionnalité la plus importante de l'app.
 class SearchScreen extends ConsumerStatefulWidget {
@@ -42,32 +40,32 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            AppSpacing.gapL,
+            const SizedBox(height: 24),
             FloatingSearchBar(
               controller: _controller,
               onChanged: _search.onQueryChanged,
               onSubmitted: () =>
                   _search.search(_controller.text, format: _formatFilter),
             ),
-            AppSpacing.gapM,
+            const SizedBox(height: 16),
             SizedBox(
               height: 40,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding: AppSpacing.screen,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 children: [
                   _FormatChip(
                     label: 'Alle',
                     selected: _formatFilter == null,
                     onTap: () => _applyFilter(null),
                   ),
-                  AppSpacing.hGapS,
+                  const SizedBox(width: 8),
                   _FormatChip(
                     label: 'EPUB',
                     selected: _formatFilter == BookFormat.epub,
                     onTap: () => _applyFilter(BookFormat.epub),
                   ),
-                  AppSpacing.hGapS,
+                  const SizedBox(width: 8),
                   _FormatChip(
                     label: 'PDF',
                     selected: _formatFilter == BookFormat.pdf,
@@ -76,7 +74,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ],
               ),
             ),
-            AppSpacing.gapS,
+            const SizedBox(height: 12),
             Expanded(
                 child: AppAnimations.crossFade(
                     child: _body(ref.watch(searchControllerProvider).valueOrNull))),
@@ -127,18 +125,18 @@ class _SearchPrompt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(AppIcons.search, size: 44, color: colors.inkTertiary),
-          AppSpacing.gapL,
+          Icon(AppIcons.search, size: 44, color: colors.onSurfaceVariant),
+          const SizedBox(height: 24),
           Text(
             'Wonach suchst du?',
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          AppSpacing.gapS,
+          const SizedBox(height: 12),
           Text(
             'Titel, Autor oder ISBN eingeben.',
             style: Theme.of(context).textTheme.bodyMedium,
@@ -184,24 +182,24 @@ class _ResultsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     return ListView.separated(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xxxl),
+      padding: const EdgeInsets.only(bottom: 128),
       itemCount: items.length + (hasMore ? 1 : 0),
       separatorBuilder: (_, __) =>
-          Divider(indent: AppSpacing.l, endIndent: AppSpacing.l),
+          Divider(indent: 24, endIndent: 24),
       itemBuilder: (context, index) {
         if (index >= items.length) {
           onLoadMore();
           return const Padding(
-            padding: EdgeInsets.all(AppSpacing.xl),
+            padding: EdgeInsets.all(32),
             child: AppLoadingSpinner(),
           );
         }
         final item = items[index];
         final book = item.book;
         return ListTile(
-          contentPadding: AppSpacing.listItem,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           leading:
               BookCover(title: book.title, coverUrl: book.coverUrl, width: 44),
           title: Text(book.title,
@@ -221,10 +219,10 @@ class _ResultsList extends StatelessWidget {
           ),
           trailing: Container(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.s, vertical: AppSpacing.xxs),
+                horizontal: 12, vertical: 2),
             decoration: BoxDecoration(
-              color: colors.surfaceAlt,
-              borderRadius: BorderRadius.circular(AppSpacing.xs),
+              color: colors.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
               book.format.name.toUpperCase(),
