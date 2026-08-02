@@ -7,8 +7,6 @@ import '../../app/router.dart';
 import '../../components/app_states.dart';
 import '../../components/book_grid.dart';
 import '../../components/section_title.dart';
-import '../../design_system/tokens/app_colors.dart';
-import '../../design_system/tokens/app_spacing.dart';
 
 /// Accueil — « Start ». Continuer la lecture + ajouts récents.
 /// Le livre est toujours l'élément principal ; le reste est discret.
@@ -33,7 +31,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final engine = ref.read(engineProvider);
     final state = engine.library.state;
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     final continueReading = state.continueReading
@@ -63,15 +61,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             : ListView(
                 children: [
                   Padding(
-                    padding: AppSpacing.screen,
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AppSpacing.gapXl,
+                        const SizedBox(height: 32),
                         Text('Lesung',
                             style: textTheme.displayLarge
-                                ?.copyWith(color: colors.ink)),
-                        AppSpacing.gapXs,
+                                ?.copyWith(color: colors.onSurface)),
+                        const SizedBox(height: 8),
                         Text(
                           _greeting(),
                           style: textTheme.bodyMedium,
@@ -80,8 +78,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                   if (continueReading.isNotEmpty) ...[
-                    const Padding(
-                      padding: AppSpacing.screen,
+                    Padding(
+                      padding: const EdgeInsets.all(20),
                       child:
                           SectionTitle(title: 'Weiterlesen'),
                     ),
@@ -91,7 +89,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ],
                   Padding(
-                    padding: AppSpacing.screen,
+                    padding: const EdgeInsets.all(20),
                     child: SectionTitle(
                       title: 'Zuletzt hinzugefügt',
                       actionLabel: 'Alle',
@@ -99,7 +97,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                   Padding(
-                    padding: AppSpacing.screen,
+                    padding: const EdgeInsets.all(20),
                     child: BookGrid(
                       books: recent.take(6).toList(),
                       shrinkWrap: true,
@@ -107,7 +105,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       onBookTap: (book) => _openBook(book.id),
                     ),
                   ),
-                  AppSpacing.gapXxl,
+                  const SizedBox(height: 48),
                 ],
               ),
       ),

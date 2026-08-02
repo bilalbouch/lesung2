@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../design_system/tokens/app_colors.dart';
 import '../design_system/tokens/app_motion.dart';
 import 'action_button.dart';
 
@@ -18,7 +17,7 @@ class AppDialogs {
     String cancelLabel = 'Abbrechen',
     bool destructive = false,
   }) async {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     final result = await showGeneralDialog<bool>(
       context: context,
       barrierDismissible: true,
@@ -62,7 +61,7 @@ class AppDialogs {
     String initialValue = '',
     String confirmLabel = 'Speichern',
   }) async {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     final controller = TextEditingController(text: initialValue);
     final result = await showDialog<String>(
       context: context,
