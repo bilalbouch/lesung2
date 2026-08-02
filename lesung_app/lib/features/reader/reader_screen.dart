@@ -8,10 +8,8 @@ import '../../app/router.dart';
 import '../../components/app_bottom_sheet.dart';
 import '../../components/app_progress_indicator.dart';
 import '../../components/reader_toolbar.dart';
-import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_icons.dart';
 import '../../design_system/tokens/app_motion.dart';
-import '../../design_system/tokens/app_spacing.dart';
 import '../../features/reader/reader_text_provider.dart';
 import 'reader_page_content.dart';
 import '../../features/sync/sync_provider.dart';
@@ -178,7 +176,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     if (state.status == ReaderStatus.error) {
       return Center(
         child: Padding(
-          padding: AppSpacing.screen,
+          padding: const EdgeInsets.all(20),
           child: Text(
             'Das Buch konnte nicht geöffnet werden.\n'
             '${state.errorMessage ?? ''}',
@@ -267,11 +265,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   setSheetState(() {});
                 },
               ),
-              AppSpacing.gapM,
+              const SizedBox(height: 16),
               if (state.searching)
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.m),
+                      vertical: 16),
                   child: AppProgressIndicator(
                     value: state.searchTotalUnits == 0
                         ? null
@@ -337,7 +335,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   for (final preset in ReaderTheme.presets.values)
                     Padding(
                       padding:
-                          const EdgeInsets.only(right: AppSpacing.s),
+                          const EdgeInsets.only(right: 12),
                       child: _ThemeChip(
                         theme: preset,
                         selected: settings.themeId == preset.id,
@@ -347,7 +345,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     ),
                 ],
               ),
-              AppSpacing.gapXl,
+              const SizedBox(height: 32),
               _SettingSlider(
                 label: 'Schriftgröße',
                 value: settings.fontSize,
@@ -372,14 +370,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 onChanged: (v) =>
                     update((s) => s.copyWith(marginHorizontal: v)),
               ),
-              AppSpacing.gapL,
+              const SizedBox(height: 24),
               // -- Police -------------------------------------------------
               Text('Schriftart',
                   style: Theme.of(context).textTheme.bodySmall),
-              AppSpacing.gapS,
+              const SizedBox(height: 12),
               Wrap(
-                spacing: AppSpacing.s,
-                runSpacing: AppSpacing.s,
+                spacing: 12,
+                runSpacing: 12,
                 children: [
                   for (final entry
                       in ReaderSettings.availableFonts.entries)
@@ -423,7 +421,7 @@ class _ThemeChip extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(
             color: selected
-                ? AppColors.of(context).accent
+                ? Theme.of(context).colorScheme.primary
                 : Color(theme.textColor).withValues(alpha: 0.2),
             width: selected ? 2 : 1,
           ),
