@@ -50,7 +50,31 @@ class GoogleBooksSource implements BookSource {
   }
 
   @override
-  Future<List<DownloadLink>> resolveDownloadLinks(String sourceBookId) async => [];
+  Future<List<DownloadLink>> resolveDownloadLinks(String sourceBookId) async {
+    var url = 'https://www.googleapis.com/books/v1/volumes/$sourceBookId';
+    if (_apiKey != null && _apiKey!.isNotEmpty) url += '?key=$_apiKey';
+    final response = await _client.get(Uri.parse(url));
+    if (response.statusCode != 200) return [];
+
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    final accessInfo = data['accessInfo'] as Map<String, dynamic>? ?? {};
+    final links = <DownloadLink>[];
+    for (final entry in const [
+      ('epub', BookFormat.epub),
+      ('pdf', BookFormat.pdf),
+    ]) {
+      final format = accessInfo[entry.$1] as Map<String, dynamic>?;
+      final downloadUrl = format?['downloadLink'] as String?;
+      if (format?['isAvailable'] == true && downloadUrl != null) {
+        links.add(DownloadLink(
+          url: Uri.parse(downloadUrl),
+          kind: DownloadLinkKind.direct,
+          format: entry.$2,
+        ));
+      }
+    }
+    return links;
+  }
 
   @override
   Future<SourceHealth> healthCheck() async {

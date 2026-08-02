@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +17,7 @@ import '../../components/favorite_button.dart';
 import '../../design_system/tokens/app_icons.dart';
 import '../../features/sync/sync_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../../services/browser_download.dart';
 
 /// Détails du livre — couverture en héros, métadonnées discrètes,
 /// action principale : Télécharger.
@@ -85,7 +87,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
     final textTheme = Theme.of(context).textTheme;
     final book = widget.item.book;
     final supportsDownloads =
-        ref.read(engineProvider).supportsManagedDownloads;
+        kIsWeb || ref.read(engineProvider).supportsManagedDownloads;
 
     final meta = [
 
@@ -151,16 +153,6 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
             onPressed:
                 _downloading || !supportsDownloads ? null : _startDownload,
           ),
-          if (!supportsDownloads) ...[
-            const SizedBox(height: 10),
-            Text(
-              l10n.bookDetailsWebDownloadUnavailable,
-              style: textTheme.bodySmall?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
           const SizedBox(height: 16),
           Row(
 
@@ -190,54 +182,83 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
     setState(() => _downloading = true);
     final engine = ref.read(engineProvider);
     final book = widget.item.book;
+
     try {
-      final downloadManager = engine.downloadManager;
-      if (downloadManager == null) {
-        throw StateError(l10n.bookDetailsWebDownloadUnavailable);
+      if (kIsWeb) {
+        Uri? directUrl;
+        for (final bookRef in book.refs) {
+          if (bookRef.sourceId == 'gutendex' && bookRef.url != null) {
+            directUrl = bookRef.url;
+            break;
+          }
+        }
+        if (directUrl != null) {
+          startBrowserDownload(directUrl, _downloadFileName(book.format.name));
+          if (mounted) {
+            AppSnackbars.success(context, l10n.bookDetailsDownloadStarted);
+          }
+          return;
+        }
       }
-      if (book.refs.isEmpty) {
 
-        throw StateError('Keine Quelle für dieses Buch.');
+      final links = <DownloadLink>[];
+      for (final bookRef in book.refs) {
+        final source = engine.registry.byId(bookRef.sourceId);
+        if (source == null) continue;
+        try {
+          links.addAll(await source.resolveDownloadLinks(bookRef.sourceBookId));
+        } catch (_) {
+          // Une source indisponible ne doit pas empêcher d'essayer les autres.
+        }
       }
-      final ref0 = book.refs.first;
-      final source = engine.registry.byId(ref0.sourceId);
-      if (source == null) {
-        throw StateError('Quelle unbekannt: ${ref0.sourceId}');
-      }
-      final links = await source.resolveDownloadLinks(ref0.sourceBookId);
-      if (links.isEmpty) {
-        throw StateError('Keine Download-Links gefunden.');
-      }
-      await downloadManager.enqueue(DownloadTask(
-        id: book.dedupKey,
-        title: book.title,
+      if (links.isEmpty) throw StateError(l10n.errorFileNotFound);
 
-        author: book.author,
-        coverUrl: book.coverUrl,
-        format: book.format,
-        links: links
-            .map((l) => DownloadLink(
-                url: l.url,
-                kind: l.kind,
-                format: l.format,
-                md5: l.md5,
-                fileSizeBytes: l.fileSizeBytes))
-            .toList(),
-        expectedMd5: links
-            .map((l) => l.md5)
-            .firstWhere((m) => m != null && m.isNotEmpty, orElse: () => null),
-        expectedSizeBytes: book.fileSizeBytes,
-      ));
+      if (kIsWeb) {
+        final link = links.firstWhere(
+          (candidate) => candidate.kind == DownloadLinkKind.direct,
+          orElse: () => links.first,
+        );
+        startBrowserDownload(link.url, _downloadFileName(link.format.name));
+      } else {
+        final downloadManager = engine.downloadManager;
+        if (downloadManager == null) {
+          throw StateError(l10n.errorUnknown);
+        }
+        await downloadManager.enqueue(DownloadTask(
+          id: book.dedupKey,
+          title: book.title,
+          author: book.author,
+          coverUrl: book.coverUrl,
+          format: book.format,
+          links: links,
+          expectedMd5: links
+              .map((link) => link.md5)
+              .firstWhere((md5) => md5 != null && md5.isNotEmpty,
+                  orElse: () => null),
+          expectedSizeBytes: book.fileSizeBytes,
+        ));
+      }
+
       if (mounted) {
         AppSnackbars.success(context, l10n.bookDetailsDownloadStarted);
       }
-    } catch (e) {
+    } catch (error) {
       if (mounted) {
-        AppSnackbars.error(context, l10n.bookDetailsDownloadFailed(e.toString()));
+        AppSnackbars.error(
+            context, l10n.bookDetailsDownloadFailed(error.toString()));
       }
     } finally {
       if (mounted) setState(() => _downloading = false);
     }
+  }
+
+  String _downloadFileName(String formatName) {
+    final safeTitle = widget.item.book.title
+        .replaceAll(RegExp(r'[^a-zA-Z0-9À-ÿ._ -]'), '')
+        .trim()
+        .replaceAll(RegExp(r'\s+'), '_');
+    final extension = formatName == 'pdf' ? 'pdf' : 'epub';
+    return '${safeTitle.isEmpty ? 'book' : safeTitle}.$extension';
   }
 
   String _formatSize(int bytes) {
