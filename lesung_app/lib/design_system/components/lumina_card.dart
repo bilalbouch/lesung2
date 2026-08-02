@@ -13,6 +13,7 @@ class LuminaBookCard extends StatelessWidget {
   final double? progress;
   final VoidCallback? onTap;
   final LuminaCardLayout layout;
+  final int? animationIndex;
 
   const LuminaBookCard({
     super.key,
@@ -24,16 +25,45 @@ class LuminaBookCard extends StatelessWidget {
     this.progress,
     this.onTap,
     this.layout = LuminaCardLayout.grid,
+    this.animationIndex,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    Widget card;
     if (layout == LuminaCardLayout.list) {
-      return _buildListCard(context, isDark);
+      card = _buildListCard(context, isDark);
+    } else {
+      card = _buildGridCard(context, isDark);
     }
-    return _buildGridCard(context, isDark);
+
+    if (animationIndex != null) {
+      final delay = Duration(milliseconds: 40 * animationIndex!);
+      return FutureBuilder(
+        future: Future.delayed(delay),
+        builder: (context, snapshot) {
+          final isReady = snapshot.connectionState == ConnectionState.done;
+          return TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: isReady ? 1.0 : 0.0),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, _) {
+              return Opacity(
+                opacity: value,
+                child: Transform.translate(
+                  offset: Offset(0, (1 - value) * 12),
+                  child: card,
+                ),
+              );
+            },
+          );
+        },
+      );
+    }
+
+    return card;
   }
 
   Widget _buildGridCard(BuildContext context, bool isDark) {

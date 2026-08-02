@@ -65,30 +65,81 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.bookDetails,
       parentNavigatorKey: _rootKey,
-      builder: (_, state) => BookDetailsScreen(
-        item: state.extra as SearchResultItem,
+      pageBuilder: (context, state) => CustomTransitionPage(
+        child: BookDetailsScreen(
+          item: state.extra as SearchResultItem,
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 0.05);
+          const end = Offset.zero;
+          const curve = Curves.easeOutCubic;
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var fadeTween = Tween<double>(begin: 0.0, end: 1.0);
+          return FadeTransition(
+            opacity: animation.drive(fadeTween),
+            child: SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            ),
+          );
+        },
       ),
     ),
     GoRoute(
       path: AppRoutes.reader,
       parentNavigatorKey: _rootKey,
-      builder: (_, state) =>
-          ReaderScreen(book: state.extra as ReaderBookArgs),
+      pageBuilder: (context, state) => CustomTransitionPage(
+        child: ReaderScreen(book: state.extra as ReaderBookArgs),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.easeOutCubic;
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+      ),
     ),
     GoRoute(
       path: AppRoutes.favorites,
       parentNavigatorKey: _rootKey,
-      builder: (_, __) => const FavoritesScreen(),
+      pageBuilder: (context, state) => CustomTransitionPage(
+        child: const FavoritesScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      ),
     ),
     GoRoute(
       path: AppRoutes.collections,
       parentNavigatorKey: _rootKey,
-      builder: (_, __) => const CollectionsScreen(),
+      pageBuilder: (context, state) => CustomTransitionPage(
+        child: const CollectionsScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      ),
     ),
     GoRoute(
       path: AppRoutes.history,
       parentNavigatorKey: _rootKey,
-      builder: (_, __) => const HistoryScreen(),
+      pageBuilder: (context, state) => CustomTransitionPage(
+        child: const HistoryScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      ),
     ),
   ],
 );
