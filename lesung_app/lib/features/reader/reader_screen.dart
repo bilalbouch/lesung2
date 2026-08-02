@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lesung/features/reader/domain/reader_bookmarks.dart';
 import 'package:lesung/features/reader/domain/reader_settings.dart';
 import 'package:lesung/features/reader/presentation/reader_controller.dart';
 
@@ -37,6 +40,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   String? _unitText;
   int? _loadedUnit;
   bool _cloudRestorePending = true;
+  bool _cloudBookmarksReady = false;
 
   @override
   void initState() {
@@ -90,10 +94,71 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         await _controller.manager.saveNow();
         if (!mounted) return;
       }
+
+      await _restoreCloudBookmarks();
+      if (!mounted) return;
     }
 
     _cloudRestorePending = false;
     await _saveCloudProgress();
+  }
+
+  Future<void> _restoreCloudBookmarks() async {
+    final service = ref.read(cloudSyncServiceProvider);
+    final cloudBookmarks = await service.getBookmarks(widget.book.bookId);
+    if (!mounted || cloudBookmarks == null) return;
+    if (!ref.read(syncControllerProvider).enabled) return;
+
+    final unitCount = _controller.manager.reader?.unitCount ?? 0;
+    final localBookmarks = _controller.state.bookmarks
+        .map(_toCloudBookmark)
+        .toList();
+    final merged = CloudBookmark.merge(
+      local: localBookmarks,
+      cloud: cloudBookmarks,
+      unitCount: unitCount,
+    );
+    final localLocators = localBookmarks
+        .map((bookmark) => bookmark.locator)
+        .toSet();
+    final imported = merged
+        .where((bookmark) => !localLocators.contains(bookmark.locator))
+        .map(
+          (bookmark) => ReaderBookmark(
+            id: bookmark.id,
+            bookId: _controller.manager.bookId ?? widget.book.filePath,
+            locator: bookmark.locator,
+            unitIndex: bookmark.unitIndex,
+            label: bookmark.label,
+            chapterTitle: bookmark.chapterTitle,
+            createdAt: DateTime.now(),
+          ),
+        );
+    await _controller.mergeBookmarks(imported);
+    if (!mounted || !ref.read(syncControllerProvider).enabled) return;
+
+    _cloudBookmarksReady = true;
+    await service.saveBookmarks(widget.book.bookId, merged);
+  }
+
+  CloudBookmark _toCloudBookmark(ReaderBookmark bookmark) => CloudBookmark(
+        id: bookmark.id,
+        locator: bookmark.locator,
+        unitIndex: bookmark.unitIndex,
+        label: bookmark.label,
+        chapterTitle: bookmark.chapterTitle,
+      );
+
+  Future<void> _saveCloudBookmarks() async {
+    if (!_cloudBookmarksReady || !ref.read(syncControllerProvider).enabled) {
+      return;
+    }
+    final bookmarks = _controller.state.bookmarks
+        .map(_toCloudBookmark)
+        .toList();
+    await ref
+        .read(cloudSyncServiceProvider)
+        .saveBookmarks(widget.book.bookId, bookmarks);
   }
 
   Future<void> _saveCloudProgress() async {
@@ -177,7 +242,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
               onToc: _openToc,
               onBookmark: () async {
                 await _controller.toggleBookmarkAtCurrentPosition();
-                if (mounted) setState(() {});
+                if (mounted) {
+                  setState(() {});
+                  unawaited(_saveCloudBookmarks());
+                }
               },
             ),
           ),

@@ -237,6 +237,29 @@ class ReaderController {
   // Signets et annotations
   // ------------------------------------------------------------------
 
+  Future<void> mergeBookmarks(Iterable<ReaderBookmark> incoming) async {
+    final bookId = manager.bookId;
+    if (bookId == null) return;
+
+    final knownLocators = manager.bookmarks.all
+        .map((bookmark) => bookmark.locator)
+        .toSet();
+    for (final bookmark in incoming) {
+      if (knownLocators.add(bookmark.locator)) {
+        await manager.bookmarks.add(
+          id: bookmark.id,
+          bookId: bookId,
+          locator: bookmark.locator,
+          unitIndex: bookmark.unitIndex,
+          label: bookmark.label,
+          chapterTitle: bookmark.chapterTitle,
+        );
+      }
+    }
+    _state = _state.copyWith(bookmarks: manager.bookmarks.all);
+    _emit();
+  }
+
   Future<void> toggleBookmarkAtCurrentPosition() async {
     final position = manager.position;
     final bookId = manager.bookId;

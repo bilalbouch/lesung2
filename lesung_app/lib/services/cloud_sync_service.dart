@@ -27,11 +27,12 @@ class CloudReadingProgress {
       return null;
     }
 
-    final parsedUnit = unitIndex.toInt();
+    final parsedUnitNumber = unitIndex.toDouble();
     final parsedProgress = progress.toDouble();
+    if (!parsedUnitNumber.isFinite || !parsedProgress.isFinite) return null;
+    final parsedUnit = unitIndex.toInt();
     if (unitIndex != parsedUnit ||
         parsedUnit < 0 ||
-        !parsedProgress.isFinite ||
         parsedProgress < 0 ||
         parsedProgress > 1) {
       return null;
@@ -42,6 +43,86 @@ class CloudReadingProgress {
       progress: parsedProgress,
       chapterTitle: chapterTitle as String?,
     );
+  }
+}
+
+class CloudBookmark {
+  final String id;
+  final String locator;
+  final int unitIndex;
+  final String? label;
+  final String? chapterTitle;
+
+  const CloudBookmark({
+    required this.id,
+    required this.locator,
+    required this.unitIndex,
+    this.label,
+    this.chapterTitle,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'locator': locator,
+        'unitIndex': unitIndex,
+        'label': label,
+        'chapterTitle': chapterTitle,
+      };
+
+  static CloudBookmark? fromMap(Map<String, dynamic>? data) {
+    final id = data?['id'];
+    final locator = data?['locator'];
+    final unitIndex = data?['unitIndex'];
+    final label = data?['label'];
+    final chapterTitle = data?['chapterTitle'];
+    if (id is! String ||
+        id.trim().isEmpty ||
+        locator is! String ||
+        locator.trim().isEmpty ||
+        unitIndex is! num ||
+        (label != null && label is! String) ||
+        (chapterTitle != null && chapterTitle is! String)) {
+      return null;
+    }
+    final parsedUnitNumber = unitIndex.toDouble();
+    if (!parsedUnitNumber.isFinite ||
+        unitIndex != unitIndex.toInt() ||
+        unitIndex < 0) {
+      return null;
+    }
+
+    return CloudBookmark(
+      id: id,
+      locator: locator,
+      unitIndex: unitIndex.toInt(),
+      label: label as String?,
+      chapterTitle: chapterTitle as String?,
+    );
+  }
+
+  static List<CloudBookmark> merge({
+    required Iterable<CloudBookmark> local,
+    required Iterable<CloudBookmark> cloud,
+    required int unitCount,
+  }) {
+    final validLocal = local
+        .where((bookmark) => bookmark.unitIndex < unitCount)
+        .toList();
+    final localIds = validLocal.map((bookmark) => bookmark.id).toSet();
+    final byLocator = <String, CloudBookmark>{};
+    for (final bookmark in cloud) {
+      if (bookmark.unitIndex < unitCount && !localIds.contains(bookmark.id)) {
+        byLocator[bookmark.locator] = bookmark;
+      }
+    }
+    for (final bookmark in validLocal) {
+      byLocator[bookmark.locator] = bookmark;
+    }
+    return byLocator.values.toList()
+      ..sort((a, b) {
+        final byUnit = a.unitIndex.compareTo(b.unitIndex);
+        return byUnit != 0 ? byUnit : a.locator.compareTo(b.locator);
+      });
   }
 }
 
@@ -168,7 +249,7 @@ class CloudSyncService {
 
   Future<void> saveBookmarks(
     String bookId,
-    List<Map<String, dynamic>> bookmarks,
+    List<CloudBookmark> bookmarks,
   ) async {
     final firestore = _firestore;
     final uid = _uid;
@@ -180,16 +261,16 @@ class CloudSyncService {
           .collection('bookmarks')
           .doc(bookId)
           .set({
-        'items': bookmarks,
+        'items': bookmarks.map((bookmark) => bookmark.toMap()).toList(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (_) {}
   }
 
-  Future<List<Map<String, dynamic>>> getBookmarks(String bookId) async {
+  Future<List<CloudBookmark>?> getBookmarks(String bookId) async {
     final firestore = _firestore;
     final uid = _uid;
-    if (firestore == null || uid == null) return [];
+    if (firestore == null || uid == null) return null;
     try {
       final doc = await firestore
           .collection('users')
@@ -197,11 +278,26 @@ class CloudSyncService {
           .collection('bookmarks')
           .doc(bookId)
           .get();
-      final data = doc.data();
-      if (data == null || data['items'] == null) return [];
-      return List<Map<String, dynamic>>.from(data['items']);
+      final rawItems = doc.data()?['items'];
+      if (rawItems == null) return [];
+      if (rawItems is! List) return null;
+
+      final bookmarks = <CloudBookmark>[];
+      final ids = <String>{};
+      final locators = <String>{};
+      for (final item in rawItems) {
+        if (item is! Map) return null;
+        final parsed = CloudBookmark.fromMap(Map<String, dynamic>.from(item));
+        if (parsed == null ||
+            !ids.add(parsed.id) ||
+            !locators.add(parsed.locator)) {
+          return null;
+        }
+        bookmarks.add(parsed);
+      }
+      return bookmarks;
     } catch (_) {
-      return [];
+      return null;
     }
   }
 }

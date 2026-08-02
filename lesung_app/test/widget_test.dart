@@ -50,6 +50,63 @@ void main() {
     expect(plan.cloudFavoriteIds, ['local-a', 'remote-only']);
   });
 
+  test('fusionne les signets par position et conserve la version locale', () {
+    const cloud = [
+      CloudBookmark(id: 'cloud-1', locator: 'epub:u1', unitIndex: 1),
+      CloudBookmark(id: 'local-2', locator: 'epub:u0', unitIndex: 0),
+      CloudBookmark(id: 'invalid-unit', locator: 'epub:u9', unitIndex: 9),
+    ];
+    const local = [
+      CloudBookmark(id: 'local-1', locator: 'epub:u1', unitIndex: 1),
+      CloudBookmark(id: 'local-2', locator: 'epub:u2', unitIndex: 2),
+    ];
+
+    final merged = CloudBookmark.merge(
+      local: local,
+      cloud: cloud,
+      unitCount: 4,
+    );
+
+    expect(merged.map((bookmark) => bookmark.id), ['local-1', 'local-2']);
+  });
+
+  test('valide et sérialise un signet cloud', () {
+    final bookmark = CloudBookmark.fromMap({
+      'id': 'bookmark-1',
+      'locator': 'epub:u3',
+      'unitIndex': 3,
+      'chapterTitle': 'Chapitre 4',
+    });
+
+    expect(bookmark?.id, 'bookmark-1');
+    expect(bookmark?.locator, 'epub:u3');
+    expect(bookmark?.toMap()['unitIndex'], 3);
+    expect(
+      CloudBookmark.fromMap({
+        'id': '',
+        'locator': 'epub:u3',
+        'unitIndex': 3,
+      }),
+      isNull,
+    );
+    expect(
+      CloudBookmark.fromMap({
+        'id': 'bookmark-2',
+        'locator': 'epub:u3',
+        'unitIndex': -1,
+      }),
+      isNull,
+    );
+    expect(
+      CloudBookmark.fromMap({
+        'id': 'bookmark-3',
+        'locator': 'epub:u3',
+        'unitIndex': double.nan,
+      }),
+      isNull,
+    );
+  });
+
   test('valide une progression cloud bien formée', () {
     final progress = CloudReadingProgress.fromMap({
       'unitIndex': 4,
