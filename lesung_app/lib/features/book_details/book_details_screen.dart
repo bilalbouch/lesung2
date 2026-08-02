@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +14,7 @@ import '../../components/app_snackbars.dart';
 import '../../components/book_cover.dart';
 import '../../components/favorite_button.dart';
 import '../../design_system/tokens/app_icons.dart';
+import '../../features/sync/sync_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
 
 /// Détails du livre — couverture en héros, métadonnées discrètes,
@@ -68,6 +71,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen> {
     }
     final isFav = await manager.favorites.toggle(book.dedupKey);
     if (!mounted) return;
+    unawaited(ref.read(syncControllerProvider.notifier).syncFavorites());
     setState(() => _isFavorite = isFav);
     final l10n = AppLocalizations.of(context)!;
     AppSnackbars.info(context,

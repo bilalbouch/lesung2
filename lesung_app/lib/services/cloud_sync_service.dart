@@ -148,17 +148,21 @@ class CloudSyncService {
     } catch (_) {}
   }
 
-  Future<List<String>> getFavorites() async {
+  Future<List<String>?> getFavorites() async {
     final firestore = _firestore;
     final uid = _uid;
-    if (firestore == null || uid == null) return [];
+    if (firestore == null || uid == null) return null;
     try {
       final doc = await firestore.collection('users').doc(uid).get();
       final data = doc.data();
-      if (data == null || data['favorites'] == null) return [];
-      return List<String>.from(data['favorites']);
+      final rawFavorites = data?['favorites'];
+      if (rawFavorites == null) return [];
+      if (rawFavorites is! List || rawFavorites.any((item) => item is! String)) {
+        return null;
+      }
+      return rawFavorites.cast<String>();
     } catch (_) {
-      return [];
+      return null;
     }
   }
 

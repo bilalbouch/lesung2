@@ -23,6 +23,33 @@ void main() {
     expect(state.configured, isFalse);
   });
 
+  test('fusionne les favoris cloud connus sans perdre les favoris distants', () {
+    final plan = FavoriteSyncPlan.create(
+      localBookIds: const ['local-a', 'local-b'],
+      localFavoriteIds: const ['local-a'],
+      cloudFavoriteIds: const ['local-b', 'remote-only'],
+      restoreCloud: true,
+    );
+
+    expect(plan.localFavoriteIds, ['local-a', 'local-b']);
+    expect(
+      plan.cloudFavoriteIds,
+      ['local-a', 'local-b', 'remote-only'],
+    );
+  });
+
+  test('respecte une suppression locale et conserve les favoris inconnus', () {
+    final plan = FavoriteSyncPlan.create(
+      localBookIds: const ['local-a', 'local-b'],
+      localFavoriteIds: const ['local-a'],
+      cloudFavoriteIds: const ['local-a', 'local-b', 'remote-only'],
+      restoreCloud: false,
+    );
+
+    expect(plan.localFavoriteIds, ['local-a']);
+    expect(plan.cloudFavoriteIds, ['local-a', 'remote-only']);
+  });
+
   test('valide une progression cloud bien formée', () {
     final progress = CloudReadingProgress.fromMap({
       'unitIndex': 4,
