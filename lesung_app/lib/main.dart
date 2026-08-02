@@ -4,7 +4,6 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'app/engine.dart';
 import 'app/router.dart';
-import 'design_system/tokens/app_motion.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/cloud_sync_service.dart';
 import 'design_system/lumina_theme.dart';
@@ -75,8 +74,31 @@ class LesungApp extends StatelessWidget {
 
 /// Écran de marque (splash) : logo, nom, point accentué — apparition
 /// douce, aucune animation décorative.
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,29 +106,51 @@ class SplashScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: colors.surface,
       body: Center(
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: 1),
-          duration: AppDurations.normal,
-          builder: (context, value, child) => Opacity(
-            opacity: value,
-            child: child,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const BrandLogo(size: 88),
-              const SizedBox(height: 32),
-              Text(
-                'Lesung',
-                style: Theme.of(context).textTheme.displayLarge,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Deine Bibliothek.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-          ),
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            final logoScale = Tween<double>(begin: 0.8, end: 1.0)
+                .animate(CurvedAnimation(
+                  parent: _controller,
+                  curve: const Interval(0.0, 0.5, curve: Curves.easeOutBack),
+                ));
+            final titleOpacity = Tween<double>(begin: 0.0, end: 1.0)
+                .animate(CurvedAnimation(
+                  parent: _controller,
+                  curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
+                ));
+            final subtitleOpacity = Tween<double>(begin: 0.0, end: 1.0)
+                .animate(CurvedAnimation(
+                  parent: _controller,
+                  curve: const Interval(0.5, 0.9, curve: Curves.easeOut),
+                ));
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Transform.scale(
+                  scale: logoScale.value,
+                  child: const BrandLogo(size: 88),
+                ),
+                const SizedBox(height: 32),
+                Opacity(
+                  opacity: titleOpacity.value,
+                  child: Text(
+                    'Lesung',
+                    style: Theme.of(context).textTheme.displayLarge,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Opacity(
+                  opacity: subtitleOpacity.value,
+                  child: Text(
+                    'Deine Bibliothek.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
