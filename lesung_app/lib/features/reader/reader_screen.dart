@@ -14,6 +14,7 @@ import '../../design_system/tokens/app_motion.dart';
 import '../../design_system/tokens/app_spacing.dart';
 import '../../features/reader/reader_text_provider.dart';
 import 'reader_page_content.dart';
+import '../../features/sync/sync_provider.dart';
 
 /// Reader premium — surface de lecture épurée : le texte est l'élément
 /// principal, les chrome (barres) n'apparaissent qu'au tap central.
@@ -48,6 +49,17 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       final unit = state.position?.unitIndex;
       if (state.status == ReaderStatus.ready && unit != _loadedUnit) {
         _loadUnitText(unit ?? 0);
+        // Sync cloud — sauvegarde progression
+        final sync = ref.read(cloudSyncServiceProvider);
+        final pos = state.position;
+        if (pos != null) {
+          sync.saveProgress(
+            bookId: widget.book.bookId,
+            unitIndex: pos.unitIndex,
+            progress: pos.progress,
+            chapterTitle: pos.chapterTitle,
+          );
+        }
       }
       setState(() {});
     });

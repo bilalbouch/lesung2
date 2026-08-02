@@ -8,9 +8,12 @@ import 'design_system/app_theme.dart';
 import 'design_system/tokens/app_colors.dart';
 import 'design_system/tokens/app_motion.dart';
 import 'design_system/tokens/app_spacing.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'services/cloud_sync_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   // Symboles de date allemands (Verlauf, groupage par jour).
   initializeDateFormatting('de');
   runApp(const LesungBootstrap());
@@ -31,7 +34,9 @@ class _LesungBootstrapState extends State<LesungBootstrap> {
   @override
   void initState() {
     super.initState();
-    Engine.create().then((engine) {
+    Engine.create().then((engine) async {
+      final sync = CloudSyncService();
+      await sync.init();
       if (mounted) setState(() => _engine = engine);
     });
   }
