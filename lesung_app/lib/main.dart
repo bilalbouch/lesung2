@@ -4,12 +4,12 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'app/engine.dart';
 import 'app/router.dart';
-import 'design_system/app_theme.dart';
 import 'design_system/tokens/app_colors.dart';
 import 'design_system/tokens/app_motion.dart';
 import 'design_system/tokens/app_spacing.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/cloud_sync_service.dart';
+import 'design_system/lumina_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,7 +47,7 @@ class _LesungBootstrapState extends State<LesungBootstrap> {
     if (engine == null) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.light(),
+        theme: LuminaTheme.light,
         home: const SplashScreen(),
       );
     }
@@ -66,8 +66,8 @@ class LesungApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Lesung',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: LuminaTheme.light,
+      darkTheme: LuminaTheme.dark,
       themeMode: ThemeMode.system,
       routerConfig: appRouter,
     );
