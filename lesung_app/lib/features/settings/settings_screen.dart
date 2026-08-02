@@ -10,6 +10,7 @@ import '../../components/section_title.dart';
 import '../../design_system/tokens/app_icons.dart';
 import '../../design_system/tokens/lumina_radius.dart';
 import '../../design_system/tokens/app_spacing.dart';
+import '../../features/sync/sync_provider.dart';
 import '../../main.dart' show BrandLogo;
 import '../../l10n/generated/app_localizations.dart';
 
@@ -52,6 +53,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final engine = ref.read(engineProvider);
     final settings = _readerController.state.settings;
     final stats = engine.library.state.stats;
+    final syncState = ref.watch(syncControllerProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -140,6 +142,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         (s) => s.copyWith(marginHorizontal: v)),
                   ),
                 ],
+              ),
+            ),
+            AppSpacing.gapXxl,
+
+            SectionTitle(title: l10n.settingsSyncSection),
+            AppSpacing.gapM,
+            Container(
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(LuminaRadius.l),
+              ),
+              child: SwitchListTile.adaptive(
+                secondary: Icon(Icons.cloud_outlined, color: colors.primary),
+                title: Text(l10n.settingsSyncTitle),
+                subtitle: Text(
+                  syncState.configured
+                      ? l10n.settingsSyncDescription
+                      : l10n.settingsSyncUnavailable,
+                ),
+                value: syncState.enabled,
+                onChanged: syncState.busy || !syncState.configured
+                    ? null
+                    : ref.read(syncControllerProvider.notifier).setEnabled,
               ),
             ),
             AppSpacing.gapXxl,

@@ -178,6 +178,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsReadingStyle => 'Lesestil';
 
   @override
+  String get settingsSyncSection => 'Sicherung';
+
+  @override
+  String get settingsSyncTitle => 'Cloud-Synchronisierung';
+
+  @override
+  String get settingsSyncDescription =>
+      'Sichere deinen Lesefortschritt in Firebase. Du kannst dies jederzeit deaktivieren.';
+
+  @override
+  String get settingsSyncUnavailable =>
+      'Firebase ist nicht konfiguriert. Deine Daten bleiben nur auf diesem Gerät.';
+
+  @override
   String get settingsStatistics => 'Statistik';
 
   @override

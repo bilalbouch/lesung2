@@ -2,46 +2,67 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-/// Service de synchronisation cloud via Firebase.
-/// Auth anonyme + Firestore pour backup progression/favoris/bookmarks.
-/// Mode degrade : fonctionne offline si Firebase non configure.
+/// Synchronisation Firebase explicitement activée par l'utilisateur.
+/// L'application reste entièrement locale lorsque Firebase est absent ou
+/// lorsque la sauvegarde cloud n'a pas été autorisée.
 class CloudSyncService {
-  late FirebaseAuth _auth;
-  late FirebaseFirestore _firestore;
+  FirebaseAuth? _auth;
+  FirebaseFirestore? _firestore;
   bool _available = false;
 
-  String? get _uid => _available ? _auth.currentUser?.uid : null;
+  String? get _uid => _available ? _auth?.currentUser?.uid : null;
+  bool get isConfigured => _auth != null && _firestore != null;
+  bool get isAvailable => _available;
 
-  /// Initialise l'authentification anonyme si necessaire.
-  /// Silencieux si Firebase n'est pas configure (mode offline).
+  /// Prépare Firebase sans créer de session ni envoyer de données.
   Future<void> init() async {
     if (Firebase.apps.isEmpty) return;
     try {
       _auth = FirebaseAuth.instance;
       _firestore = FirebaseFirestore.instance;
-      if (_auth.currentUser == null) {
-        await _auth.signInAnonymously();
-      }
-      _available = true;
     } catch (_) {
+      _auth = null;
+      _firestore = null;
       _available = false;
     }
   }
 
-  bool get isAvailable => _available;
+  /// Ouvre la session anonyme uniquement après consentement explicite.
+  Future<bool> connect() async {
+    final auth = _auth;
+    if (auth == null || _firestore == null) return false;
+    try {
+      if (auth.currentUser == null) {
+        await auth.signInAnonymously();
+      }
+      _available = auth.currentUser != null;
+      return _available;
+    } catch (_) {
+      _available = false;
+      return false;
+    }
+  }
 
-  /// Sauvegarde la progression de lecture d'un livre.
+  /// Ferme la session cloud et arrête immédiatement la synchronisation.
+  Future<void> disconnect() async {
+    try {
+      await _auth?.signOut();
+    } finally {
+      _available = false;
+    }
+  }
+
   Future<void> saveProgress({
     required String bookId,
     required int unitIndex,
     required double progress,
     String? chapterTitle,
   }) async {
-    if (!_available) return;
+    final firestore = _firestore;
+    final uid = _uid;
+    if (firestore == null || uid == null) return;
     try {
-      final uid = _uid;
-      if (uid == null) return;
-      await _firestore
+      await firestore
           .collection('users')
           .doc(uid)
           .collection('progress')
@@ -55,13 +76,12 @@ class CloudSyncService {
     } catch (_) {}
   }
 
-  /// Recupere la progression d'un livre.
   Future<Map<String, dynamic>?> getProgress(String bookId) async {
-    if (!_available) return null;
+    final firestore = _firestore;
+    final uid = _uid;
+    if (firestore == null || uid == null) return null;
     try {
-      final uid = _uid;
-      if (uid == null) return null;
-      final doc = await _firestore
+      final doc = await firestore
           .collection('users')
           .doc(uid)
           .collection('progress')
@@ -73,26 +93,24 @@ class CloudSyncService {
     }
   }
 
-  /// Sauvegarde les favoris.
   Future<void> saveFavorites(List<String> bookIds) async {
-    if (!_available) return;
+    final firestore = _firestore;
+    final uid = _uid;
+    if (firestore == null || uid == null) return;
     try {
-      final uid = _uid;
-      if (uid == null) return;
-      await _firestore.collection('users').doc(uid).set({
+      await firestore.collection('users').doc(uid).set({
         'favorites': bookIds,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (_) {}
   }
 
-  /// Recupere les favoris.
   Future<List<String>> getFavorites() async {
-    if (!_available) return [];
+    final firestore = _firestore;
+    final uid = _uid;
+    if (firestore == null || uid == null) return [];
     try {
-      final uid = _uid;
-      if (uid == null) return [];
-      final doc = await _firestore.collection('users').doc(uid).get();
+      final doc = await firestore.collection('users').doc(uid).get();
       final data = doc.data();
       if (data == null || data['favorites'] == null) return [];
       return List<String>.from(data['favorites']);
@@ -101,13 +119,15 @@ class CloudSyncService {
     }
   }
 
-  /// Sauvegarde les bookmarks d'un livre.
-  Future<void> saveBookmarks(String bookId, List<Map<String, dynamic>> bookmarks) async {
-    if (!_available) return;
+  Future<void> saveBookmarks(
+    String bookId,
+    List<Map<String, dynamic>> bookmarks,
+  ) async {
+    final firestore = _firestore;
+    final uid = _uid;
+    if (firestore == null || uid == null) return;
     try {
-      final uid = _uid;
-      if (uid == null) return;
-      await _firestore
+      await firestore
           .collection('users')
           .doc(uid)
           .collection('bookmarks')
@@ -119,13 +139,12 @@ class CloudSyncService {
     } catch (_) {}
   }
 
-  /// Recupere les bookmarks d'un livre.
   Future<List<Map<String, dynamic>>> getBookmarks(String bookId) async {
-    if (!_available) return [];
+    final firestore = _firestore;
+    final uid = _uid;
+    if (firestore == null || uid == null) return [];
     try {
-      final uid = _uid;
-      if (uid == null) return [];
-      final doc = await _firestore
+      final doc = await firestore
           .collection('users')
           .doc(uid)
           .collection('bookmarks')

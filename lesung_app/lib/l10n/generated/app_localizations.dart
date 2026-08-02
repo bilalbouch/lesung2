@@ -424,6 +424,30 @@ abstract class AppLocalizations {
   /// **'Reading style'**
   String get settingsReadingStyle;
 
+  /// No description provided for @settingsSyncSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get settingsSyncSection;
+
+  /// No description provided for @settingsSyncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud sync'**
+  String get settingsSyncTitle;
+
+  /// No description provided for @settingsSyncDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up your reading progress to Firebase. You can turn it off at any time.'**
+  String get settingsSyncDescription;
+
+  /// No description provided for @settingsSyncUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Firebase is not configured. Your data stays only on this device.'**
+  String get settingsSyncUnavailable;
+
   /// No description provided for @settingsStatistics.
   ///
   /// In en, this message translates to:

@@ -177,6 +177,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsReadingStyle => 'Reading style';
 
   @override
+  String get settingsSyncSection => 'Backup';
+
+  @override
+  String get settingsSyncTitle => 'Cloud sync';
+
+  @override
+  String get settingsSyncDescription =>
+      'Back up your reading progress to Firebase. You can turn it off at any time.';
+
+  @override
+  String get settingsSyncUnavailable =>
+      'Firebase is not configured. Your data stays only on this device.';
+
+  @override
   String get settingsStatistics => 'Statistics';
 
   @override

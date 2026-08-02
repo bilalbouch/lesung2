@@ -177,6 +177,20 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsReadingStyle => 'Style de lecture';
 
   @override
+  String get settingsSyncSection => 'Sauvegarde';
+
+  @override
+  String get settingsSyncTitle => 'Synchronisation cloud';
+
+  @override
+  String get settingsSyncDescription =>
+      'Sauvegarder votre progression dans Firebase. Vous pouvez la désactiver à tout moment.';
+
+  @override
+  String get settingsSyncUnavailable =>
+      'Firebase n’est pas configuré. Vos données restent uniquement sur cet appareil.';
+
+  @override
   String get settingsStatistics => 'Statistiques';
 
   @override

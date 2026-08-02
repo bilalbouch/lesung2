@@ -47,16 +47,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       final unit = state.position?.unitIndex;
       if (state.status == ReaderStatus.ready && unit != _loadedUnit) {
         _loadUnitText(unit ?? 0);
-        // Sync cloud — sauvegarde progression
-        final sync = ref.read(cloudSyncServiceProvider);
+        final syncState = ref.read(syncControllerProvider);
         final pos = state.position;
-        if (pos != null) {
-          sync.saveProgress(
-            bookId: widget.book.bookId,
-            unitIndex: pos.unitIndex,
-            progress: pos.progress,
-            chapterTitle: pos.chapterTitle,
-          );
+        if (syncState.enabled && pos != null) {
+          ref.read(cloudSyncServiceProvider).saveProgress(
+                bookId: widget.book.bookId,
+                unitIndex: pos.unitIndex,
+                progress: pos.progress,
+                chapterTitle: pos.chapterTitle,
+              );
         }
       }
       setState(() {});
