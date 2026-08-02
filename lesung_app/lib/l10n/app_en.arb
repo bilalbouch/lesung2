@@ -62,6 +62,11 @@
 
   "settingsTitle": "More",
   "settingsLibrarySection": "Library",
+  "settingsCloudSection": "Account and sync",
+  "settingsCloudTitle": "Firebase backup",
+  "settingsCloudLocal": "Off — your data stays on this device.",
+  "settingsCloudEnabled": "On — your reading progress is backed up.",
+  "settingsCloudError": "Firebase is not configured yet.",
   "settingsReadingStyle": "Reading style",
   "settingsStatistics": "Statistics",
   "settingsBooks": "Books",

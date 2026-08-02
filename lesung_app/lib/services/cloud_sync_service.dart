@@ -12,20 +12,36 @@ class CloudSyncService {
 
   String? get _uid => _available ? _auth.currentUser?.uid : null;
 
-  /// Initialise l'authentification anonyme si necessaire.
-  /// Silencieux si Firebase n'est pas configure (mode offline).
+  /// Restaure une session existante sans créer de compte automatiquement.
+  /// L'application reste locale tant que l'utilisateur n'active pas le cloud.
   Future<void> init() async {
     if (Firebase.apps.isEmpty) return;
     try {
       _auth = FirebaseAuth.instance;
       _firestore = FirebaseFirestore.instance;
-      if (_auth.currentUser == null) {
-        await _auth.signInAnonymously();
-      }
-      _available = true;
+      _available = _auth.currentUser != null;
     } catch (_) {
       _available = false;
     }
+  }
+
+  Future<void> connectAnonymously() async {
+    if (Firebase.apps.isEmpty) {
+      throw StateError('Firebase non configuré.');
+    }
+    _auth = FirebaseAuth.instance;
+    _firestore = FirebaseFirestore.instance;
+    if (_auth.currentUser == null) {
+      await _auth.signInAnonymously();
+    }
+    _available = true;
+  }
+
+  Future<void> disconnect() async {
+    if (Firebase.apps.isNotEmpty) {
+      await FirebaseAuth.instance.signOut();
+    }
+    _available = false;
   }
 
   bool get isAvailable => _available;

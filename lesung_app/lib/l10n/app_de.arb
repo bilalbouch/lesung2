@@ -61,6 +61,11 @@
 
   "settingsTitle": "Mehr",
   "settingsLibrarySection": "Bibliothek",
+  "settingsCloudSection": "Konto und Synchronisierung",
+  "settingsCloudTitle": "Firebase-Sicherung",
+  "settingsCloudLocal": "Aus — deine Daten bleiben auf diesem Gerät.",
+  "settingsCloudEnabled": "Ein — dein Lesefortschritt wird gesichert.",
+  "settingsCloudError": "Firebase ist noch nicht konfiguriert.",
   "settingsReadingStyle": "Lesestil",
   "settingsStatistics": "Statistik",
   "settingsBooks": "Bücher",

@@ -170,6 +170,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLibrarySection => 'Library';
 
   @override
+  String get settingsCloudSection => 'Account and sync';
+
+  @override
+  String get settingsCloudTitle => 'Firebase backup';
+
+  @override
+  String get settingsCloudLocal => 'Off — your data stays on this device.';
+
+  @override
+  String get settingsCloudEnabled => 'On — your reading progress is backed up.';
+
+  @override
+  String get settingsCloudError => 'Firebase is not configured yet.';
+
+  @override
   String get settingsReadingStyle => 'Reading style';
 
   @override
