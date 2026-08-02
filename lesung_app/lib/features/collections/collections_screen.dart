@@ -15,6 +15,7 @@ import '../../components/collection_card.dart';
 import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_icons.dart';
 import '../../design_system/tokens/app_spacing.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Sammlungen — étagères thématiques créées par l'utilisateur.
 /// Création via dialogue, détail au tap, renommage/suppression au
@@ -65,11 +66,12 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
   }
 
   Future<void> _create() async {
+    final l10n = AppLocalizations.of(context)!;
     final name = await AppDialogs.prompt(
       context,
-      title: 'Neue Sammlung',
-      hint: 'Name der Sammlung',
-      confirmLabel: 'Erstellen',
+      title: l10n.collectionCreateTitle,
+      hint: l10n.collectionNameHint,
+      confirmLabel: l10n.actionCreate,
     );
     if (name == null) return;
     await ref.read(engineProvider).libraryManager.collections.create(name);
@@ -77,6 +79,7 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
 
   Future<void> _editCollection(Collection collection) async {
     final engine = ref.read(engineProvider);
+    final l10n = AppLocalizations.of(context)!;
     final action = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: AppColors.of(context).surface,
@@ -86,13 +89,13 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
           children: [
             ListTile(
               leading: const Icon(AppIcons.settings),
-              title: const Text('Umbenennen'),
+              title: Text(l10n.actionRename),
               onTap: () => Navigator.of(context).pop('rename'),
             ),
             ListTile(
               leading: Icon(AppIcons.delete,
                   color: AppColors.of(context).error),
-              title: Text('Löschen',
+              title: Text(l10n.actionDelete,
                   style:
                       TextStyle(color: AppColors.of(context).error)),
               onTap: () => Navigator.of(context).pop('delete'),
@@ -105,7 +108,7 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
     if (action == 'rename') {
       final newName = await AppDialogs.prompt(
         context,
-        title: 'Sammlung umbenennen',
+        title: l10n.collectionRenameTitle,
         initialValue: collection.name,
       );
       if (newName != null) {
@@ -115,10 +118,9 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
     } else if (action == 'delete') {
       final confirmed = await AppDialogs.confirm(
         context,
-        title: 'Sammlung löschen?',
-        message:
-            '„${collection.name}" wird gelöscht. Die Bücher bleiben in deiner Bibliothek.',
-        confirmLabel: 'Löschen',
+        title: l10n.collectionDeleteTitle,
+        message: '“${collection.name}” ${l10n.collectionDeleteMessage}',
+        confirmLabel: l10n.actionDelete,
         destructive: true,
       );
       if (confirmed) {
@@ -131,9 +133,10 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
   Widget build(BuildContext context) {
     final state = ref.read(engineProvider).library.state;
     final collections = state.collections;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sammlungen')),
+      appBar: AppBar(title: Text(l10n.collectionsTitle)),
       floatingActionButton: FloatingActionButton(
         onPressed: _create,
         child: const Icon(AppIcons.add),
@@ -209,11 +212,12 @@ class _CollectionDetailScreenState
   }
 
   Future<void> _removeBook(LibraryBook book) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await AppDialogs.confirm(
       context,
-      title: 'Aus Sammlung entfernen?',
-      message: '„${book.title}" wird aus der Sammlung entfernt.',
-      confirmLabel: 'Entfernen',
+      title: l10n.collectionRemoveBookTitle,
+      message: '“${book.title}” ${l10n.collectionRemoveBookMessage}',
+      confirmLabel: l10n.actionRemove,
     );
     if (!confirmed) return;
     await ref

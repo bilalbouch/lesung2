@@ -112,6 +112,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 horizontal: AppSpacing.xs),
                             child: _ThemeOption(
                               theme: preset,
+                              label: _themeLabel(l10n, preset.id),
                               selected:
                                   settings.themeId == preset.id,
                               onTap: () => _readerController
@@ -232,6 +233,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
     return l10n.settingsMinutesOnly(duration.inMinutes);
   }
+
+  String _themeLabel(AppLocalizations l10n, String themeId) => switch (themeId) {
+        'dark' => l10n.readerThemeDark,
+        'sepia' => l10n.readerThemeSepia,
+        'night' => l10n.readerThemeBlack,
+        _ => l10n.readerThemeLight,
+      };
 }
 
 class _SettingsTile extends StatelessWidget {
@@ -269,11 +277,13 @@ class _SettingsTile extends StatelessWidget {
 
 class _ThemeOption extends StatelessWidget {
   final ReaderTheme theme;
+  final String label;
   final bool selected;
   final VoidCallback onTap;
 
   const _ThemeOption({
     required this.theme,
+    required this.label,
     required this.selected,
     required this.onTap,
   });
@@ -301,8 +311,7 @@ class _ThemeOption extends StatelessWidget {
                     color: Color(theme.textColor),
                     fontWeight: FontWeight.w600)),
             AppSpacing.gapXs,
-            Text(theme.name,
-                style: Theme.of(context).textTheme.bodySmall),
+            Text(label, style: Theme.of(context).textTheme.bodySmall),
           ],
         ),
       ),

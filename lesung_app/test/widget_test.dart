@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lesung_app/features/sync/sync_provider.dart';
+import 'package:lesung_app/l10n/generated/app_localizations.dart';
 import 'package:lesung_app/main.dart';
 import 'package:lesung_app/services/cloud_sync_service.dart';
 
 void main() {
   testWidgets('affiche l’identité Lesung au démarrage', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: SplashScreen()),
+      const MaterialApp(
+        locale: Locale('de'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: SplashScreen(),
+      ),
     );
     await tester.pump(const Duration(milliseconds: 1200));
 
     expect(find.text('Lesung'), findsOneWidget);
-    expect(find.text('Deine Bibliothek.'), findsOneWidget);
+    expect(find.text('Deine Bibliothek. Privat. Lokal.'), findsOneWidget);
   });
 
   test('la synchronisation est désactivée par défaut', () {

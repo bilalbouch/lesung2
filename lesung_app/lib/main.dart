@@ -59,6 +59,8 @@ class _LesungBootstrapState extends State<LesungBootstrap> {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: LuminaTheme.light,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: const SplashScreen(),
       );
     }
@@ -67,36 +69,46 @@ class _LesungBootstrapState extends State<LesungBootstrap> {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: LuminaTheme.light,
-        home: Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.orange),
-                const SizedBox(height: 24),
-                const Text('Initialisation impossible', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                const Text('Verifiez les permissions de stockage.', textAlign: TextAlign.center),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() => _ready = false);
-                    _globalEngine = null;
-                    Engine.create().then((engine) {
-                      _globalEngine = engine;
-                      if (mounted) setState(() => _ready = true);
-                    }).catchError((e) {
-                      if (mounted) setState(() => _ready = true);
-                    });
-                    Future.delayed(const Duration(seconds: 3), () {
-                      if (mounted) setState(() => _ready = true);
-                    });
-                  },
-                  child: const Text('Reessayer'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context)!;
+            return Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline,
+                        size: 64, color: Colors.orange),
+                    const SizedBox(height: 24),
+                    Text(l10n.errorNetworkTitle,
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
+                    Text(l10n.errorUnknown, textAlign: TextAlign.center),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() => _ready = false);
+                        _globalEngine = null;
+                        Engine.create().then((engine) {
+                          _globalEngine = engine;
+                          if (mounted) setState(() => _ready = true);
+                        }).catchError((e) {
+                          if (mounted) setState(() => _ready = true);
+                        });
+                        Future.delayed(const Duration(seconds: 3), () {
+                          if (mounted) setState(() => _ready = true);
+                        });
+                      },
+                      child: Text(l10n.actionRetry),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       );
     }
@@ -156,6 +168,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: colors.surface,
       body: Center(
@@ -189,7 +202,7 @@ class _SplashScreenState extends State<SplashScreen>
                 Opacity(
                   opacity: titleOpacity.value,
                   child: Text(
-                    'Lesung',
+                    l10n.appName,
                     style: Theme.of(context).textTheme.displayLarge,
                   ),
                 ),
@@ -197,7 +210,7 @@ class _SplashScreenState extends State<SplashScreen>
                 Opacity(
                   opacity: subtitleOpacity.value,
                   child: Text(
-                    'Deine Bibliothek.',
+                    l10n.appTagline,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),

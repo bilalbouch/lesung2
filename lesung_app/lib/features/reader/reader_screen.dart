@@ -14,8 +14,9 @@ import '../../components/reader_toolbar.dart';
 import '../../design_system/tokens/app_icons.dart';
 import '../../design_system/tokens/app_motion.dart';
 import '../../features/reader/reader_text_provider.dart';
-import 'reader_page_content.dart';
 import '../../features/sync/sync_provider.dart';
+import '../../l10n/generated/app_localizations.dart';
+import 'reader_page_content.dart';
 
 /// Reader premium — surface de lecture épurée : le texte est l'élément
 /// principal, les chrome (barres) n'apparaissent qu'au tap central.
@@ -307,6 +308,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   }
 
   Widget _buildBody(ReaderViewState state, ReaderSettings settings) {
+    final l10n = AppLocalizations.of(context)!;
     if (state.status == ReaderStatus.loading ||
         state.status == ReaderStatus.idle) {
       return const Center(child: AppLoadingSpinner());
@@ -316,8 +318,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Text(
-            'Das Buch konnte nicht geöffnet werden.\n'
-            '${state.errorMessage ?? ''}',
+            '${l10n.errorInvalidFile}\n${state.errorMessage ?? ''}',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyLarge,
           ),
@@ -342,6 +343,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   void _openToc() {
     final state = _controller.state;
+    final l10n = AppLocalizations.of(context)!;
     final entries = state.tableOfContents.expand((e) => e.flatten()).toList();
     AppBottomSheet.show<void>(
       context,
@@ -349,9 +351,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppBottomSheet.header(context, title: 'Inhaltsverzeichnis'),
+          AppBottomSheet.header(context, title: l10n.readerTocTitle),
           if (entries.isEmpty)
-            Text('Kein Inhaltsverzeichnis verfügbar.',
+            Text(l10n.readerTocEmpty,
                 style: Theme.of(context).textTheme.bodyMedium)
           else
             ConstrainedBox(
@@ -382,6 +384,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   void _openSearch() {
     final controller = TextEditingController();
+    final l10n = AppLocalizations.of(context)!;
     AppBottomSheet.show<void>(
       context,
       child: StatefulBuilder(
@@ -391,13 +394,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppBottomSheet.header(context, title: 'Suche im Buch'),
+              AppBottomSheet.header(context, title: l10n.searchInBookTitle),
               TextField(
                 controller: controller,
                 autofocus: true,
-                decoration: const InputDecoration(
-                    hintText: 'Suchbegriff…',
-                    prefixIcon: Icon(AppIcons.searchInBook)),
+                decoration: InputDecoration(
+                    hintText: l10n.searchInBookHint,
+                    prefixIcon: const Icon(AppIcons.searchInBook)),
                 onSubmitted: (query) {
                   _controller.searchInBook(query);
                   setSheetState(() {});
@@ -416,7 +419,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                 )
               else if (controller.text.isNotEmpty &&
                   state.searchResults.isEmpty)
-                Text('Keine Treffer.',
+                Text(l10n.searchInBookNoHits,
                     style: Theme.of(context).textTheme.bodyMedium),
               ConstrainedBox(
                 constraints: BoxConstraints(
@@ -452,6 +455,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   }
 
   void _openSettings() {
+    final l10n = AppLocalizations.of(context)!;
     AppBottomSheet.show<void>(
       context,
       child: StatefulBuilder(
@@ -466,7 +470,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppBottomSheet.header(context, title: 'Leseinstellungen'),
+              AppBottomSheet.header(context, title: l10n.readerSettingsTitle),
               // -- Thèmes ------------------------------------------------
               Row(
                 children: [
@@ -476,6 +480,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                           const EdgeInsets.only(right: 12),
                       child: _ThemeChip(
                         theme: preset,
+                        label: _themeLabel(l10n, preset.id),
                         selected: settings.themeId == preset.id,
                         onTap: () =>
                             update((s) => s.copyWith(themeId: preset.id)),
@@ -485,7 +490,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               ),
               const SizedBox(height: 32),
               _SettingSlider(
-                label: 'Schriftgröße',
+                label: l10n.readerSettingsFontSize,
                 value: settings.fontSize,
                 min: 10,
                 max: 32,
@@ -493,7 +498,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                     update((s) => s.copyWith(fontSize: v)),
               ),
               _SettingSlider(
-                label: 'Zeilenabstand',
+                label: l10n.readerSettingsLineHeight,
                 value: settings.lineHeight,
                 min: 1.0,
                 max: 2.5,
@@ -501,7 +506,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                     update((s) => s.copyWith(lineHeight: v)),
               ),
               _SettingSlider(
-                label: 'Ränder',
+                label: l10n.readerSettingsMargins,
                 value: settings.marginHorizontal,
                 min: 0,
                 max: 64,
@@ -510,7 +515,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               ),
               const SizedBox(height: 24),
               // -- Police -------------------------------------------------
-              Text('Schriftart',
+              Text(l10n.readerSettingsFontFamily,
                   style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: 12),
               Wrap(
@@ -533,42 +538,54 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       ),
     );
   }
+
+  String _themeLabel(AppLocalizations l10n, String themeId) => switch (themeId) {
+        'dark' => l10n.readerThemeDark,
+        'sepia' => l10n.readerThemeSepia,
+        'night' => l10n.readerThemeBlack,
+        _ => l10n.readerThemeLight,
+      };
 }
 
 class _ThemeChip extends StatelessWidget {
   final ReaderTheme theme;
+  final String label;
   final bool selected;
   final VoidCallback onTap;
 
   const _ThemeChip({
     required this.theme,
+    required this.label,
     required this.selected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: AppDurations.fast,
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          color: Color(theme.backgroundColor),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: selected
-                ? Theme.of(context).colorScheme.primary
-                : Color(theme.textColor).withValues(alpha: 0.2),
-            width: selected ? 2 : 1,
+    return Tooltip(
+      message: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: AppDurations.fast,
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: Color(theme.backgroundColor),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: selected
+                  ? Theme.of(context).colorScheme.primary
+                  : Color(theme.textColor).withValues(alpha: 0.2),
+              width: selected ? 2 : 1,
+            ),
           ),
-        ),
-        child: Center(
-          child: Text('Aa',
-              style: TextStyle(
-                  color: Color(theme.textColor),
-                  fontWeight: FontWeight.w600)),
+          child: Center(
+            child: Text('Aa',
+                style: TextStyle(
+                    color: Color(theme.textColor),
+                    fontWeight: FontWeight.w600)),
+          ),
         ),
       ),
     );

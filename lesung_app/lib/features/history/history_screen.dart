@@ -56,9 +56,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   Widget build(BuildContext context) {
     final state = ref.read(engineProvider).library.state;
     final entries = state.history;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Verlauf')),
+      appBar: AppBar(title: Text(l10n.historyTitle)),
       body: state.loaded && entries.isEmpty
           ? AppEmptyState.noHistory(context: context)
           : ListView(
@@ -87,7 +88,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       ..sort((a, b) => b.openedAt.compareTo(a.openedAt));
     final groups = <String, List<ReadingHistoryEntry>>{};
     final order = <String>[];
-    final dayFormat = DateFormat.yMMMEd('de');
+    final locale = Localizations.localeOf(context).languageCode;
+    final dayFormat = DateFormat.yMMMEd(locale);
     for (final entry in sorted) {
       final label = dayFormat.format(entry.openedAt);
       if (!groups.containsKey(label)) {
@@ -126,6 +128,8 @@ class _HistoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).languageCode;
     final duration = entry.durationSeconds;
 
     return Padding(
@@ -151,9 +155,9 @@ class _HistoryTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis),
                   Text(
                     [
-                      DateFormat.Hm('de').format(entry.openedAt),
+                      DateFormat.Hm(locale).format(entry.openedAt),
                       if (duration != null && duration > 0)
-                        _formatDuration(duration),
+                        _formatDuration(duration, l10n),
                     ].join(' · '),
                     style: textTheme.bodySmall
                         ?.copyWith(color: colors.onSurfaceVariant),
@@ -167,11 +171,14 @@ class _HistoryTile extends StatelessWidget {
     );
   }
 
-  String _formatDuration(int seconds) {
+  String _formatDuration(int seconds, AppLocalizations l10n) {
     final duration = Duration(seconds: seconds);
     if (duration.inHours > 0) {
-      return '${duration.inHours} Std. ${duration.inMinutes % 60} Min.';
+      return l10n.settingsHoursMinutes(
+        duration.inHours,
+        duration.inMinutes % 60,
+      );
     }
-    return '${duration.inMinutes} Min.';
+    return l10n.settingsMinutesOnly(duration.inMinutes);
   }
 }

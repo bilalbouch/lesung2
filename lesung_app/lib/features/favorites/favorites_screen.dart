@@ -40,6 +40,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.read(engineProvider).library.state;
+    final l10n = AppLocalizations.of(context)!;
     final items = state.favorites
         .map((book) => BookItem(
               id: book.id,
@@ -51,7 +52,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Favoriten')),
+      appBar: AppBar(title: Text(l10n.favoritesTitle)),
       body: state.loaded && items.isEmpty
           ? AppEmptyState.noFavorites(context: context)
           : Padding(
