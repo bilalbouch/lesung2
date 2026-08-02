@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../design_system/tokens/app_colors.dart';
 import '../design_system/tokens/app_spacing.dart';
 import 'app_animations.dart';
 import 'book_cover.dart';
@@ -30,7 +29,7 @@ class BookCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     return AppAnimations.pressScale(
       onTap: onTap,
@@ -58,12 +57,12 @@ class BookCard extends StatelessWidget {
                       minHeight: 3,
                       backgroundColor: colors.scrim,
                       valueColor:
-                          AlwaysStoppedAnimation(colors.onAccent),
+                          AlwaysStoppedAnimation(colors.onPrimary),
                     ),
                   ),
               ],
             ),
-            AppSpacing.gapS,
+            const SizedBox(height: 12),
             Text(
               title,
               style: textTheme.bodyMedium
@@ -92,7 +91,7 @@ class _Badge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.s, vertical: AppSpacing.xxs),
@@ -105,7 +104,7 @@ class _Badge extends StatelessWidget {
         style: Theme.of(context)
             .textTheme
             .labelSmall
-            ?.copyWith(color: colors.inkSecondary, fontSize: 9),
+            ?.copyWith(color: colors.onSurfaceVariant, fontSize: 9),
       ),
     );
   }

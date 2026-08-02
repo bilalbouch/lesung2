@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../design_system/tokens/app_colors.dart';
 import '../design_system/tokens/app_icons.dart';
 import '../design_system/tokens/app_spacing.dart';
 import '../design_system/tokens/app_typography.dart';
@@ -99,7 +98,7 @@ class AppEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     return Center(
       child: Padding(
@@ -112,15 +111,15 @@ class AppEmptyState extends StatelessWidget {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: colors.accentSubtle,
+                  color: colors.primaryContainer,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: colors.accent, size: 30),
+                child: Icon(icon, color: colors.primary, size: 30),
               ),
-              AppSpacing.gapXl,
+              const SizedBox(height: 32),
               Text(title,
                   style: textTheme.titleLarge, textAlign: TextAlign.center),
-              AppSpacing.gapM,
+              const SizedBox(height: 16),
               Text(
                 message,
                 style: textTheme.bodyMedium
@@ -128,7 +127,7 @@ class AppEmptyState extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               if (actionLabel != null && onAction != null) ...[
-                AppSpacing.gapXl,
+                const SizedBox(height: 32),
                 ActionButton(
                     label: actionLabel!,
                     variant: ActionButtonVariant.secondary,
@@ -157,7 +156,7 @@ class AppLoadingState extends StatelessWidget {
         children: [
           const AppLoadingSpinner(),
           if (label != null) ...[
-            AppSpacing.gapL,
+            const SizedBox(height: 24),
             Text(label!, style: textTheme.bodySmall),
           ],
         ],

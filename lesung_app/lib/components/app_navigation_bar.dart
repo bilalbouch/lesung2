@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../design_system/tokens/app_breakpoints.dart';
-import '../design_system/tokens/app_colors.dart';
 import '../design_system/tokens/app_icons.dart';
 
 /// Destination de l'application (barre du bas / rail latéral).
@@ -57,12 +56,12 @@ class AppNavigationScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     final tablet = AppBreakpoints.isTablet(context);
 
     if (tablet) {
       return Scaffold(
-        backgroundColor: colors.background,
+        backgroundColor: colors.surface,
         body: Row(
           children: [
             NavigationRail(
@@ -77,7 +76,7 @@ class AppNavigationScaffold extends StatelessWidget {
                   ),
               ],
             ),
-            VerticalDivider(width: 1, color: colors.divider),
+            VerticalDivider(width: 1, color: colors.outlineVariant),
             Expanded(child: child),
           ],
         ),
@@ -85,7 +84,7 @@ class AppNavigationScaffold extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       body: child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: currentIndex,

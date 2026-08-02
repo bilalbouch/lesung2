@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../design_system/tokens/app_colors.dart';
 import '../design_system/tokens/app_icons.dart';
+import '../design_system/tokens/lumina_colors.dart';
 
 /// Snackbars unifiées — discrètes, flottantes, une icône sémantique.
 class AppSnackbars {
@@ -18,7 +18,7 @@ class AppSnackbars {
 
   static void _show(BuildContext context, String message, IconData? icon,
       {bool isError = false}) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
@@ -29,7 +29,7 @@ class AppSnackbars {
               Icon(
                 icon,
                 size: AppIcons.sizeS,
-                color: isError ? colors.error : colors.success,
+                color: isError ? colors.error : LuminaColors.success,
               ),
               const SizedBox(width: 10),
             ],
@@ -39,7 +39,7 @@ class AppSnackbars {
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
-                    ?.copyWith(color: colors.background),
+                    ?.copyWith(color: colors.surface),
               ),
             ),
           ],

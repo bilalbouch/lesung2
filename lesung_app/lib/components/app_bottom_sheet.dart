@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../design_system/tokens/app_colors.dart';
-import '../design_system/tokens/app_radius.dart';
+import '../design_system/tokens/lumina_radius.dart';
 import '../design_system/tokens/app_spacing.dart';
 
-/// Bottom sheet unifiée — coins [AppRadius.sheet], poignée intégrée,
+/// Bottom sheet unifiée — coins [BorderRadius.vertical(top: Radius.circular(LuminaRadius.xl))], poignée intégrée,
 /// barrière teintée par les tokens.
 class AppBottomSheet {
   const AppBottomSheet._();
@@ -14,13 +13,13 @@ class AppBottomSheet {
     required Widget child,
     bool isScrollControlled = true,
   }) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     return showModalBottomSheet<T>(
       context: context,
       isScrollControlled: isScrollControlled,
       barrierColor: colors.scrim,
       backgroundColor: colors.surface,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheet),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(LuminaRadius.xl))),
       builder: (context) => SafeArea(
         child: Padding(
           padding: EdgeInsets.only(
@@ -45,10 +44,10 @@ class AppBottomSheet {
       children: [
         Text(title, style: textTheme.titleLarge),
         if (subtitle != null) ...[
-          AppSpacing.gapXs,
+          const SizedBox(height: 8),
           Text(subtitle, style: textTheme.bodySmall),
         ],
-        AppSpacing.gapL,
+        const SizedBox(height: 24),
       ],
     );
   }
