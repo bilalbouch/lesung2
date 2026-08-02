@@ -26,25 +26,38 @@ class SectionTitle extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(title,
-                style: textTheme.titleLarge, maxLines: 1,
-                overflow: TextOverflow.ellipsis),
+            child: Text(
+              title,
+              style: textTheme.headlineMedium?.copyWith(
+                color: colors.ink,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.35,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           if (actionLabel != null && onAction != null)
-            GestureDetector(
-              onTap: onAction,
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xs),
-                child: Text(
-                  actionLabel!,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colors.accent,
-                    fontWeight: FontWeight.w600,
-                  ),
+            TextButton(
+              onPressed: onAction,
+              style: TextButton.styleFrom(
+                foregroundColor: colors.accent,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.s,
+                  vertical: AppSpacing.xs,
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                actionLabel!,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colors.accent,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
+
         ],
       ),
     );

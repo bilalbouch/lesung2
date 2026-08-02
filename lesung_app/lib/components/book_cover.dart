@@ -33,23 +33,57 @@ class BookCover extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final borderRadius = BorderRadius.circular(LuminaRadius.l);
+    final cover = coverUrl != null && coverUrl!.isNotEmpty
+        ? CachedNetworkImage(
+            imageUrl: coverUrl!,
+            fit: BoxFit.cover,
+            placeholder: (_, __) => _Monogram(title: title),
+            errorWidget: (_, __, ___) => _Monogram(title: title),
+          )
+        : _Monogram(title: title);
+
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
         borderRadius: borderRadius,
-        boxShadow: const [BoxShadow(color: Color(0x1A000000), blurRadius: 12, offset: Offset(0, 4))],
         color: colors.primaryContainer,
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.55)),
+        boxShadow: [
+          BoxShadow(
+            color: colors.shadow.withValues(alpha: 0.2),
+            blurRadius: 22,
+            spreadRadius: -5,
+            offset: const Offset(0, 11),
+          ),
+          BoxShadow(
+            color: colors.shadow.withValues(alpha: 0.12),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: coverUrl != null && coverUrl!.isNotEmpty
-          ? CachedNetworkImage(
-              imageUrl: coverUrl!,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => _Monogram(title: title),
-              errorWidget: (_, __, ___) => _Monogram(title: title),
-            )
-          : _Monogram(title: title),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          cover,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              width: 5,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    colors.scrim.withValues(alpha: 0.18),
+                    colors.scrim.withValues(alpha: 0.02),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

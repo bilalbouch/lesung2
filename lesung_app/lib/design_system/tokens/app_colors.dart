@@ -8,44 +8,44 @@ import 'package:flutter/material.dart';
 class AppColors {
   const AppColors._();
 
-  // ---------------- Accent (identique clair/sombre, décliné) --------
-  static const Color accentLight = Color(0xFF4A6B57);
-  static const Color accentDark = Color(0xFF9BC2A9);
+  // ---------------- Accent lecture (orange chaleureux) --------------
+  static const Color accentLight = Color(0xFFFF8A00);
+  static const Color accentDark = Color(0xFFFF9F0A);
 
   // ---------------- Mode clair --------------------------------------
   static const _light = AppColorScheme(
-    background: Color(0xFFFAF9F6),
+    background: Color(0xFFF7F7FA),
     surface: Color(0xFFFFFFFF),
-    surfaceAlt: Color(0xFFF1EFE9),
-    ink: Color(0xFF1B1B1F),
-    inkSecondary: Color(0xFF62636B),
-    inkTertiary: Color(0xFF9B9CA3),
+    surfaceAlt: Color(0xFFEFEFF4),
+    ink: Color(0xFF17171A),
+    inkSecondary: Color(0xFF636366),
+    inkTertiary: Color(0xFF9A9AA1),
     accent: accentLight,
     onAccent: Color(0xFFFFFFFF),
-    accentSubtle: Color(0xFFE7EEE9),
-    divider: Color(0xFFE6E4DD),
-    error: Color(0xFFB0443C),
-    success: Color(0xFF3E7A55),
-    scrim: Color(0x73000000),
-    shadow: Color(0x14000000),
+    accentSubtle: Color(0xFFFFEBD2),
+    divider: Color(0xFFE3E3E8),
+    error: Color(0xFFFF3B30),
+    success: Color(0xFF34C759),
+    scrim: Color(0x66000000),
+    shadow: Color(0x1F1C1C1E),
   );
 
   // ---------------- Mode sombre -------------------------------------
   static const _dark = AppColorScheme(
-    background: Color(0xFF121214),
-    surface: Color(0xFF1B1B1F),
-    surfaceAlt: Color(0xFF232329),
-    ink: Color(0xFFEAE8E3),
-    inkSecondary: Color(0xFFA9A7A2),
-    inkTertiary: Color(0xFF6E6D69),
+    background: Color(0xFF000000),
+    surface: Color(0xFF1C1C1E),
+    surfaceAlt: Color(0xFF2C2C2E),
+    ink: Color(0xFFF5F5F7),
+    inkSecondary: Color(0xFFAEAEB2),
+    inkTertiary: Color(0xFF6C6C70),
     accent: accentDark,
-    onAccent: Color(0xFF0F1512),
-    accentSubtle: Color(0xFF26332C),
-    divider: Color(0xFF2B2B31),
-    error: Color(0xFFE08A84),
-    success: Color(0xFF8FC7A5),
-    scrim: Color(0x8C000000),
-    shadow: Color(0x4D000000),
+    onAccent: Color(0xFFFFFFFF),
+    accentSubtle: Color(0xFF3A2B18),
+    divider: Color(0xFF38383A),
+    error: Color(0xFFFF453A),
+    success: Color(0xFF30D158),
+    scrim: Color(0x99000000),
+    shadow: Color(0x99000000),
   );
 
   static AppColorScheme of(BuildContext context) =>

@@ -55,32 +55,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ))
         .toList();
 
+    final header = _HomeHeader(
+      greeting: _greeting(l10n),
+      colors: colors,
+      textTheme: textTheme,
+    );
+
     return Scaffold(
       body: SafeArea(
         child: state.loaded && recent.isEmpty && continueReading.isEmpty
-            ? AppEmptyState.emptyLibrary(
-                context: context,
-                onExplore: () => context.go(AppRoutes.search))
-            : ListView(
+            ? Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 32),
-                        Text('Lesung',
-                            style: textTheme.displayLarge
-                                ?.copyWith(color: colors.onSurface)),
-                        const SizedBox(height: 8),
-                        Text(
-                          _greeting(l10n),
-                          style: textTheme.bodyMedium,
-                        ),
-                      ],
+                  header,
+                  Expanded(
+                    child: AppEmptyState.emptyLibrary(
+                      context: context,
+                      onExplore: () => context.go(AppRoutes.search),
                     ),
                   ),
+                ],
+              )
+            : ListView(
+                children: [
+                  header,
                   if (continueReading.isNotEmpty) ...[
+
                     Padding(
                       padding: const EdgeInsets.all(20),
                       child: SectionTitle(title: l10n.libraryContinueReading),
@@ -133,5 +132,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } else {
       context.go(AppRoutes.library);
     }
+  }
+}
+
+class _HomeHeader extends StatelessWidget {
+  final String greeting;
+  final ColorScheme colors;
+  final TextTheme textTheme;
+
+  const _HomeHeader({
+    required this.greeting,
+    required this.colors,
+    required this.textTheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  greeting,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Lesung',
+                  style: textTheme.displayMedium?.copyWith(
+                    color: colors.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: colors.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.auto_stories_rounded,
+              color: colors.primary,
+              size: 24,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -4,34 +4,38 @@ import 'package:google_fonts/google_fonts.dart';
 /// Typographie Lumina — Source Serif 4 + Inter
 class LuminaTypography {
   static TextTheme get textTheme => TextTheme(
-        displayLarge: GoogleFonts.sourceSerif4(
-          fontSize: 48,
+        displayLarge: GoogleFonts.inter(
+          fontSize: 42,
+          height: 1.08,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -1.4,
+        ),
+        displayMedium: GoogleFonts.inter(
+          fontSize: 34,
           height: 1.1,
           fontWeight: FontWeight.w700,
-          letterSpacing: -0.5,
+          letterSpacing: -1.0,
         ),
-        displayMedium: GoogleFonts.sourceSerif4(
-          fontSize: 36,
+        displaySmall: GoogleFonts.inter(
+
+          fontSize: 28,
           height: 1.15,
           fontWeight: FontWeight.w700,
-          letterSpacing: -0.3,
+          letterSpacing: -0.6,
         ),
-        displaySmall: GoogleFonts.sourceSerif4(
-          fontSize: 28,
-          height: 1.2,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.2,
-        ),
-        headlineLarge: GoogleFonts.sourceSerif4(
+        headlineLarge: GoogleFonts.inter(
           fontSize: 24,
-          height: 1.3,
-          fontWeight: FontWeight.w600,
+          height: 1.25,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.4,
         ),
-        headlineMedium: GoogleFonts.sourceSerif4(
+        headlineMedium: GoogleFonts.inter(
           fontSize: 20,
-          height: 1.35,
-          fontWeight: FontWeight.w600,
+          height: 1.3,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.25,
         ),
+
         headlineSmall: GoogleFonts.inter(
           fontSize: 18,
           height: 1.4,

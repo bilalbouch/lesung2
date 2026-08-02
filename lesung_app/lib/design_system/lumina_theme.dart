@@ -38,10 +38,34 @@ class LuminaTheme {
       appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: LuminaColors.background.withValues(alpha: 0.8),
+        centerTitle: false,
+        toolbarHeight: 68,
+        backgroundColor: LuminaColors.background.withValues(alpha: 0.94),
         foregroundColor: LuminaColors.textPrimary,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        titleTextStyle: LuminaTypography.textTheme.headlineSmall,
+        titleTextStyle: LuminaTypography.textTheme.displaySmall,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        height: 72,
+        elevation: 0,
+        backgroundColor: LuminaColors.surface.withValues(alpha: 0.96),
+        indicatorColor: LuminaColors.primarySubtle,
+        indicatorShape: const StadiumBorder(),
+        iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+              size: 24,
+              color: states.contains(WidgetState.selected)
+                  ? LuminaColors.primary
+                  : LuminaColors.textTertiary,
+            )),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) =>
+            LuminaTypography.textTheme.labelSmall?.copyWith(
+              color: states.contains(WidgetState.selected)
+                  ? LuminaColors.primary
+                  : LuminaColors.textTertiary,
+              fontWeight: states.contains(WidgetState.selected)
+                  ? FontWeight.w700
+                  : FontWeight.w500,
+            )),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
@@ -50,6 +74,7 @@ class LuminaTheme {
           borderRadius: BorderRadius.circular(LuminaRadius.l),
         ),
       ),
+
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: LuminaColors.primary,
@@ -154,10 +179,34 @@ class LuminaTheme {
       appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: LuminaColorsDark.background.withValues(alpha: 0.8),
+        centerTitle: false,
+        toolbarHeight: 68,
+        backgroundColor: LuminaColorsDark.background.withValues(alpha: 0.94),
         foregroundColor: LuminaColorsDark.textPrimary,
         systemOverlayStyle: SystemUiOverlayStyle.light,
-        titleTextStyle: LuminaTypography.darkTextTheme.headlineSmall,
+        titleTextStyle: LuminaTypography.darkTextTheme.displaySmall,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        height: 72,
+        elevation: 0,
+        backgroundColor: LuminaColorsDark.surface.withValues(alpha: 0.96),
+        indicatorColor: LuminaColorsDark.primarySubtle,
+        indicatorShape: const StadiumBorder(),
+        iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+              size: 24,
+              color: states.contains(WidgetState.selected)
+                  ? LuminaColorsDark.primary
+                  : LuminaColorsDark.textTertiary,
+            )),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) =>
+            LuminaTypography.darkTextTheme.labelSmall?.copyWith(
+              color: states.contains(WidgetState.selected)
+                  ? LuminaColorsDark.primary
+                  : LuminaColorsDark.textTertiary,
+              fontWeight: states.contains(WidgetState.selected)
+                  ? FontWeight.w700
+                  : FontWeight.w500,
+            )),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
@@ -166,6 +215,7 @@ class LuminaTheme {
           borderRadius: BorderRadius.circular(LuminaRadius.l),
         ),
       ),
+
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: LuminaColorsDark.primary,
