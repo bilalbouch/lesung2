@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lesung/features/reader/domain/reader_settings.dart';
 import 'package:lesung/features/reader/presentation/reader_controller.dart';
 
 import '../../app/engine.dart';
 import '../../app/router.dart';
+import '../../components/app_animations.dart';
 import '../../components/app_bottom_sheet.dart';
 import '../../components/app_progress_indicator.dart';
 import '../../components/reader_toolbar.dart';
@@ -12,8 +14,7 @@ import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_icons.dart';
 import '../../design_system/tokens/app_motion.dart';
 import '../../design_system/tokens/app_spacing.dart';
-import '../../features/reader/reader_text_provider.dart';
-import 'reader_page_content.dart';
+import '../../components/tts_button.dart';
 
 /// Reader premium — surface de lecture épurée : le texte est l'élément
 /// principal, les chrome (barres) n'apparaissent qu'au tap central.
@@ -65,11 +66,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
   Future<void> _loadUnitText(int unitIndex) async {
     _loadedUnit = unitIndex;
-    final text =
-        await _controller.manager.reader?.unitText(unitIndex);
+    final text = await _controller.manager.reader?.unitText(unitIndex);
     if (mounted && _loadedUnit == unitIndex) {
       setState(() => _unitText = text ?? '');
-      ref.read(readerTextProvider.notifier).state = text ?? '';
     }
   }
 
@@ -87,6 +86,27 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
   ReaderTheme get _theme =>
       ReaderTheme.byId(_controller.state.settings.themeId);
+
+  TextStyle _readingTextStyle(ReaderSettings settings) {
+    final base = switch (settings.fontFamily) {
+      'lora' => GoogleFonts.lora(),
+      'inter' => GoogleFonts.inter(),
+      'system_serif' => const TextStyle(fontFamily: 'serif'),
+      'mono' => const TextStyle(fontFamily: 'monospace'),
+      _ => const TextStyle(),
+    };
+    return base.copyWith(
+      fontSize: settings.fontSize,
+      height: settings.lineHeight,
+      color: Color(_theme.textColor),
+    );
+  }
+
+  TextAlign _flutterAlign(ReaderTextAlign align) => switch (align) {
+    ReaderTextAlign.left => TextAlign.left,
+    ReaderTextAlign.justify => TextAlign.justify,
+    ReaderTextAlign.right => TextAlign.right,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -111,9 +131,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 setState(() => _chromeVisible = !_chromeVisible);
               }
             },
-            child: SafeArea(
-              child: _buildBody(state, settings),
-            ),
+            child: SafeArea(child: _buildBody(state, settings)),
           ),
 
           // -- Chrome ---------------------------------------------------
@@ -135,7 +153,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
               },
             ),
           ),
-          Positioned(
+                    Positioned(
             bottom: 0,
             left: 0,
             right: 0,
@@ -147,10 +165,17 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
               onSettings: _openSettings,
             ),
           ),
+          Positioned(
+            bottom: 80,
+            right: 16,
+            child: TtsButton(
+              text: _unitText ?? '',
+              languageCode: 'fr-FR',
+            ),
+          ),
         ],
       ),
     );
-  }
 
   bool _isBookmarked(ReaderViewState state) {
     final unit = state.position?.unitIndex;
@@ -180,11 +205,19 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final text = _unitText;
     if (text == null) return const Center(child: AppLoadingSpinner());
 
-    return ReaderPageContent(
-      text: text,
-      settings: settings,
-      theme: _theme,
-      loadedUnit: _loadedUnit ?? 0,
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.l + settings.marginHorizontal,
+        vertical: AppSpacing.xl + settings.marginVertical,
+      ),
+      child: AppAnimations.fadeIn(
+        key: ValueKey(_loadedUnit),
+        child: SelectableText(
+          text.isEmpty ? '—' : text,
+          style: _readingTextStyle(settings),
+          textAlign: _flutterAlign(settings.textAlign),
+        ),
+      ),
     );
   }
 
@@ -203,12 +236,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         children: [
           AppBottomSheet.header(context, title: 'Inhaltsverzeichnis'),
           if (entries.isEmpty)
-            Text('Kein Inhaltsverzeichnis verfügbar.',
-                style: Theme.of(context).textTheme.bodyMedium)
+            Text(
+              'Kein Inhaltsverzeichnis verfügbar.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            )
           else
             ConstrainedBox(
               constraints: BoxConstraints(
-                  maxHeight: MediaQuery.sizeOf(context).height * 0.5),
+                maxHeight: MediaQuery.sizeOf(context).height * 0.5,
+              ),
               child: ListView.builder(
                 shrinkWrap: true,
                 itemCount: entries.length,
@@ -217,8 +253,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   return ListTile(
                     dense: true,
                     contentPadding: EdgeInsets.zero,
-                    title: Text(entry.title,
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                    title: Text(
+                      entry.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     onTap: () {
                       Navigator.of(context).pop();
                       _controller.goToTocEntry(entry);
@@ -248,8 +287,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 controller: controller,
                 autofocus: true,
                 decoration: const InputDecoration(
-                    hintText: 'Suchbegriff…',
-                    prefixIcon: Icon(AppIcons.searchInBook)),
+                  hintText: 'Suchbegriff…',
+                  prefixIcon: Icon(AppIcons.searchInBook),
+                ),
                 onSubmitted: (query) {
                   _controller.searchInBook(query);
                   setSheetState(() {});
@@ -258,21 +298,24 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
               AppSpacing.gapM,
               if (state.searching)
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.m),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
                   child: AppProgressIndicator(
-                    value: state.searchTotalUnits == 0
-                        ? null
-                        : state.searchDoneUnits / state.searchTotalUnits,
+                    value:
+                        state.searchTotalUnits == 0
+                            ? null
+                            : state.searchDoneUnits / state.searchTotalUnits,
                   ),
                 )
               else if (controller.text.isNotEmpty &&
                   state.searchResults.isEmpty)
-                Text('Keine Treffer.',
-                    style: Theme.of(context).textTheme.bodyMedium),
+                Text(
+                  'Keine Treffer.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
               ConstrainedBox(
                 constraints: BoxConstraints(
-                    maxHeight: MediaQuery.sizeOf(context).height * 0.4),
+                  maxHeight: MediaQuery.sizeOf(context).height * 0.4,
+                ),
                 child: ListView.builder(
                   shrinkWrap: true,
                   itemCount: state.searchResults.length,
@@ -281,13 +324,19 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     return ListTile(
                       dense: true,
                       contentPadding: EdgeInsets.zero,
-                      title: Text(hit.snippet,
-                          maxLines: 2, overflow: TextOverflow.ellipsis),
-                      subtitle: hit.chapterTitle == null
-                          ? null
-                          : Text(hit.chapterTitle!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
+                      title: Text(
+                        hit.snippet,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle:
+                          hit.chapterTitle == null
+                              ? null
+                              : Text(
+                                hit.chapterTitle!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                       onTap: () {
                         Navigator.of(context).pop();
                         _controller.goToSearchHit(hit);
@@ -324,13 +373,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 children: [
                   for (final preset in ReaderTheme.presets.values)
                     Padding(
-                      padding:
-                          const EdgeInsets.only(right: AppSpacing.s),
+                      padding: const EdgeInsets.only(right: AppSpacing.s),
                       child: _ThemeChip(
                         theme: preset,
                         selected: settings.themeId == preset.id,
-                        onTap: () =>
-                            update((s) => s.copyWith(themeId: preset.id)),
+                        onTap:
+                            () => update((s) => s.copyWith(themeId: preset.id)),
                       ),
                     ),
                 ],
@@ -341,41 +389,38 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 value: settings.fontSize,
                 min: 10,
                 max: 32,
-                onChanged: (v) =>
-                    update((s) => s.copyWith(fontSize: v)),
+                onChanged: (v) => update((s) => s.copyWith(fontSize: v)),
               ),
               _SettingSlider(
                 label: 'Zeilenabstand',
                 value: settings.lineHeight,
                 min: 1.0,
                 max: 2.5,
-                onChanged: (v) =>
-                    update((s) => s.copyWith(lineHeight: v)),
+                onChanged: (v) => update((s) => s.copyWith(lineHeight: v)),
               ),
               _SettingSlider(
                 label: 'Ränder',
                 value: settings.marginHorizontal,
                 min: 0,
                 max: 64,
-                onChanged: (v) =>
-                    update((s) => s.copyWith(marginHorizontal: v)),
+                onChanged:
+                    (v) => update((s) => s.copyWith(marginHorizontal: v)),
               ),
               AppSpacing.gapL,
               // -- Police -------------------------------------------------
-              Text('Schriftart',
-                  style: Theme.of(context).textTheme.bodySmall),
+              Text('Schriftart', style: Theme.of(context).textTheme.bodySmall),
               AppSpacing.gapS,
               Wrap(
                 spacing: AppSpacing.s,
                 runSpacing: AppSpacing.s,
                 children: [
-                  for (final entry
-                      in ReaderSettings.availableFonts.entries)
+                  for (final entry in ReaderSettings.availableFonts.entries)
                     ChoiceChip(
                       label: Text(entry.value),
                       selected: settings.fontFamily == entry.key,
-                      onSelected: (_) => update(
-                          (s) => s.copyWith(fontFamily: entry.key)),
+                      onSelected:
+                          (_) =>
+                              update((s) => s.copyWith(fontFamily: entry.key)),
                     ),
                 ],
               ),
@@ -410,17 +455,21 @@ class _ThemeChip extends StatelessWidget {
           color: Color(theme.backgroundColor),
           shape: BoxShape.circle,
           border: Border.all(
-            color: selected
-                ? AppColors.of(context).accent
-                : Color(theme.textColor).withValues(alpha: 0.2),
+            color:
+                selected
+                    ? AppColors.of(context).accent
+                    : Color(theme.textColor).withValues(alpha: 0.2),
             width: selected ? 2 : 1,
           ),
         ),
         child: Center(
-          child: Text('Aa',
-              style: TextStyle(
-                  color: Color(theme.textColor),
-                  fontWeight: FontWeight.w600)),
+          child: Text(
+            'Aa',
+            style: TextStyle(
+              color: Color(theme.textColor),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ),
     );
@@ -448,8 +497,7 @@ class _SettingSlider extends StatelessWidget {
       children: [
         SizedBox(
           width: 110,
-          child: Text(label,
-              style: Theme.of(context).textTheme.bodySmall),
+          child: Text(label, style: Theme.of(context).textTheme.bodySmall),
         ),
         Expanded(
           child: Slider(

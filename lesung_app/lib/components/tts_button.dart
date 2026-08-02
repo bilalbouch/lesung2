@@ -1,44 +1,41 @@
 import 'package:flutter/material.dart';
-import '../design_system/tokens/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/tts_service.dart';
+import '../features/reader/reader_text_provider.dart';
 
-class TtsButton extends StatefulWidget {
-  final String text;
-  final String? languageCode;
-  const TtsButton({super.key, required this.text, this.languageCode});
-
-  @override
-  State<TtsButton> createState() => _TtsButtonState();
-}
-
-class _TtsButtonState extends State<TtsButton> {
-  final TtsService _tts = TtsService();
-  bool _speaking = false;
+class TtsButton extends ConsumerWidget {
+  const TtsButton({super.key});
 
   @override
-  void dispose() {
-    _tts.dispose();
-    super.dispose();
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tts = ref.watch(ttsStateProvider);
+    final pageText = ref.watch(readerTextProvider);
 
-  Future<void> _toggle() async {
-    if (_speaking) {
-      await _tts.stop();
-      setState(() => _speaking = false);
-    } else {
-      if (widget.languageCode != null) await _tts.setLanguage(widget.languageCode!);
-      await _tts.speak(widget.text);
-      setState(() => _speaking = true);
-    }
-  }
+    final isPlaying = tts.isPlaying;
+    final hasText = pageText != null && pageText.trim().isNotEmpty;
 
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
-    return FloatingActionButton.small(
-      onPressed: _toggle,
-      backgroundColor: _speaking ? colors.accent : colors.surface,
-      child: Icon(_speaking ? Icons.stop : Icons.volume_up, color: _speaking ? Colors.white : colors.ink),
+    return IconButton(
+      icon: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: Icon(
+          isPlaying ? Icons.stop_circle_outlined : Icons.volume_up_outlined,
+          key: ValueKey<bool>(isPlaying),
+        ),
+      ),
+      color: isPlaying
+          ? Theme.of(context).colorScheme.primary
+          : (hasText ? null : Colors.grey),
+      onPressed: hasText
+          ? () {
+              final notifier = ref.read(ttsStateProvider.notifier);
+              if (isPlaying) {
+                notifier.stop();
+              } else {
+                notifier.speak(pageText);
+              }
+            }
+          : null,
+      tooltip: isPlaying ? 'Arrêter' : 'Lire à haute voix',
     );
   }
 }

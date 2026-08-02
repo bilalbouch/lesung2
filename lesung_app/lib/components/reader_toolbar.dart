@@ -1,15 +1,14 @@
 ﻿import 'package:flutter/material.dart';
-
+import 'tts_button.dart';
 import '../design_system/tokens/app_colors.dart';
 import '../design_system/tokens/app_icons.dart';
 import '../design_system/tokens/app_motion.dart';
 import '../design_system/tokens/app_spacing.dart';
-import 'tts_button.dart';
 
-/// Barre d'outils du Reader â€” apparaÃ®t/disparaÃ®t au tap central.
+/// Barre d'outils du Reader — apparaît/disparaît au tap central.
 ///
 /// Haut : retour, titre du chapitre, recherche dans le livre, options.
-/// Bas : chapitre prÃ©cÃ©dent, progression, chapitre suivant, rÃ©glages.
+/// Bas : chapitre précédent, progression, chapitre suivant, réglages.
 class ReaderToolbar extends StatelessWidget {
   final bool visible;
   final String? chapterTitle;
@@ -82,6 +81,8 @@ class ReaderToolbar extends StatelessWidget {
                     color: bookmarked ? colors.accent : null,
                     onPressed: onBookmark,
                   ),
+                  // ← BOUTON TTS AJOUTÉ ICI
+                  const TtsButton(),
                 ],
               ),
             ),
@@ -92,7 +93,7 @@ class ReaderToolbar extends StatelessWidget {
   }
 }
 
-/// Barre infÃ©rieure du Reader (navigation chapitres + progression).
+/// Barre inférieure du Reader (navigation chapitres + progression).
 class ReaderBottomBar extends StatelessWidget {
   final String? text;
   final bool visible;
@@ -166,4 +167,3 @@ class ReaderBottomBar extends StatelessWidget {
     );
   }
 }
-

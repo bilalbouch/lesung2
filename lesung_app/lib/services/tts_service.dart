@@ -1,44 +1,75 @@
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TtsService {
-  static final TtsService _instance = TtsService._internal();
-  factory TtsService() => _instance;
-  TtsService._internal();
+final ttsStateProvider = StateNotifierProvider<TtsNotifier, TtsState>((ref) {
+  return TtsNotifier();
+});
 
-  final FlutterTts _flutterTts = FlutterTts();
-  bool _isSpeaking = false;
-  bool _isInitialized = false;
+class TtsState {
+  final bool isPlaying;
+  final String? currentText;
+  final String language;
 
-  bool get isSpeaking => _isSpeaking;
+  const TtsState({
+    this.isPlaying = false,
+    this.currentText,
+    this.language = 'fr-FR',
+  });
 
-  Future<void> initialize() async {
-    if (_isInitialized) return;
-    await _flutterTts.setLanguage('fr-FR');
-    await _flutterTts.setSpeechRate(0.5);
-    await _flutterTts.setVolume(1.0);
-    await _flutterTts.setPitch(1.0);
-    _flutterTts.setCompletionHandler(() => _isSpeaking = false);
-    _flutterTts.setErrorHandler((msg) => _isSpeaking = false);
-    _isInitialized = true;
+  TtsState copyWith({
+    bool? isPlaying,
+    String? currentText,
+    String? language,
+  }) {
+    return TtsState(
+      isPlaying: isPlaying ?? this.isPlaying,
+      currentText: currentText ?? this.currentText,
+      language: language ?? this.language,
+    );
+  }
+}
+
+class TtsNotifier extends StateNotifier<TtsState> {
+  final FlutterTts _tts = FlutterTts();
+
+  TtsNotifier() : super(const TtsState()) {
+    _tts.setCompletionHandler(() {
+      state = state.copyWith(isPlaying: false);
+    });
+    _tts.setErrorHandler((msg) {
+      state = state.copyWith(isPlaying: false);
+    });
   }
 
-  Future<void> speak(String text) async {
-    await initialize();
-    if (_isSpeaking) await stop();
-    _isSpeaking = true;
-    await _flutterTts.speak(text);
+  Future<void> speak(String text, {String? language}) async {
+    if (text.trim().isEmpty) return;
+    await stop();
+
+    final lang = language ?? state.language;
+    await _tts.setLanguage(lang);
+    await _tts.setSpeechRate(0.48);
+    await _tts.setVolume(1.0);
+    await _tts.setPitch(1.0);
+
+    state = state.copyWith(isPlaying: true, currentText: text, language: lang);
+    await _tts.speak(text);
   }
 
   Future<void> stop() async {
-    await _flutterTts.stop();
-    _isSpeaking = false;
+    await _tts.stop();
+    if (state.isPlaying) {
+      state = state.copyWith(isPlaying: false);
+    }
   }
 
-  Future<void> setLanguage(String languageCode) async {
-    await _flutterTts.setLanguage(languageCode);
+  Future<void> setLanguage(String lang) async {
+    state = state.copyWith(language: lang);
+    await _tts.setLanguage(lang);
   }
 
+  @override
   void dispose() {
-    _flutterTts.stop();
+    _tts.stop();
+    super.dispose();
   }
 }
