@@ -7,9 +7,8 @@ import 'package:lesung/features/reader/presentation/reader_controller.dart';
 import '../../app/engine.dart';
 import '../../app/router.dart';
 import '../../components/section_title.dart';
-import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_icons.dart';
-import '../../design_system/tokens/app_radius.dart';
+import '../../design_system/tokens/lumina_radius.dart';
 import '../../design_system/tokens/app_spacing.dart';
 import '../../main.dart' show BrandLogo;
 import '../../l10n/generated/app_localizations.dart';
@@ -48,7 +47,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final engine = ref.read(engineProvider);
     final settings = _readerController.state.settings;
@@ -87,8 +86,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Container(
               padding: AppSpacing.card,
               decoration: BoxDecoration(
-                color: colors.surfaceAlt,
-                borderRadius: AppRadius.card,
+                color: colors.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(LuminaRadius.l),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,8 +150,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Container(
                 padding: AppSpacing.card,
                 decoration: BoxDecoration(
-                  color: colors.surfaceAlt,
-                  borderRadius: AppRadius.card,
+                  color: colors.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(LuminaRadius.l),
                 ),
                 child: Column(
                   children: [
@@ -217,21 +216,21 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Container(
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: colors.accentSubtle,
-          borderRadius: AppRadius.cardSmall,
+          color: colors.secondaryContainer,
+          borderRadius: BorderRadius.circular(LuminaRadius.m),
         ),
-        child: Icon(icon, color: colors.accent, size: 20),
+        child: Icon(icon, color: colors.primary, size: 20),
       ),
       title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
       trailing: Icon(AppIcons.chapterNext,
-          color: colors.inkTertiary, size: 20),
+          color: colors.onSurfaceVariant, size: 20),
       onTap: onTap,
     );
   }
@@ -250,7 +249,7 @@ class _ThemeOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -258,9 +257,9 @@ class _ThemeOption extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
         decoration: BoxDecoration(
           color: Color(theme.backgroundColor),
-          borderRadius: AppRadius.cardSmall,
+          borderRadius: BorderRadius.circular(LuminaRadius.m),
           border: Border.all(
-            color: selected ? colors.accent : colors.divider,
+            color: selected ? colors.primary : colors.outlineVariant,
             width: selected ? 2 : 1,
           ),
         ),

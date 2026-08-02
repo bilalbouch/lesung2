@@ -8,7 +8,6 @@ import '../../app/router.dart';
 import '../../components/app_states.dart';
 import '../../components/download_card.dart';
 import '../../components/section_title.dart';
-import '../../design_system/tokens/app_spacing.dart';
 
 /// Téléchargements — actifs en haut (progression temps réel),
 /// terminés et échoués en dessous.
@@ -52,14 +51,14 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
       body: empty
           ? AppEmptyState.noDownloads()
           : ListView(
-              padding: AppSpacing.screen,
+              padding: const EdgeInsets.all(20),
               children: [
                 if (active.isNotEmpty) ...[
                   const SectionTitle(title: 'Aktiv'),
                   for (final task in active)
                     Padding(
                       padding:
-                          const EdgeInsets.only(bottom: AppSpacing.m),
+                          const EdgeInsets.only(bottom: 16),
                       child: _cardFor(task, engine),
                     ),
                 ],
@@ -68,7 +67,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                   for (final task in failed)
                     Padding(
                       padding:
-                          const EdgeInsets.only(bottom: AppSpacing.m),
+                          const EdgeInsets.only(bottom: 16),
                       child: _cardFor(task, engine),
                     ),
                 ],
@@ -77,11 +76,11 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                   for (final task in completed)
                     Padding(
                       padding:
-                          const EdgeInsets.only(bottom: AppSpacing.m),
+                          const EdgeInsets.only(bottom: 16),
                       child: _cardFor(task, engine),
                     ),
                 ],
-                AppSpacing.gapXxl,
+                const SizedBox(height: 48),
               ],
             ),
     );

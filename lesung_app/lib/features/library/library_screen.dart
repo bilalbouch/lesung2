@@ -8,10 +8,8 @@ import '../../app/router.dart';
 import '../../components/app_states.dart';
 import '../../components/book_grid.dart';
 import '../../components/section_title.dart';
-import '../../design_system/tokens/app_colors.dart';
-import '../../design_system/tokens/app_radius.dart';
+import '../../design_system/tokens/lumina_radius.dart';
 import '../../design_system/tokens/app_icons.dart';
-import '../../design_system/tokens/app_spacing.dart';
 
 /// Bibliothèque — Weiterlesen, Heruntergeladen, Favoris, accès
 /// Collections/Verlauf.
@@ -70,7 +68,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           : ListView(
               children: [
                 Padding(
-                  padding: AppSpacing.screen,
+                  padding: const EdgeInsets.all(20),
                   child: Row(
                     children: [
                       Expanded(
@@ -80,7 +78,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           onTap: () => context.push(AppRoutes.collections),
                         ),
                       ),
-                      AppSpacing.hGapM,
+                      const SizedBox(width: 16),
                       Expanded(
                         child: _Shortcut(
                           icon: AppIcons.favorite,
@@ -92,8 +90,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                 ),
                 if (continueReading.isNotEmpty) ...[
-                  const Padding(
-                    padding: AppSpacing.screen,
+                  Padding(
+                    padding: const EdgeInsets.all(20),
                     child: SectionTitle(title: 'Weiterlesen'),
                   ),
                   BookList(
@@ -102,12 +100,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                 ],
                 if (downloaded.isNotEmpty) ...[
-                  const Padding(
-                    padding: AppSpacing.screen,
+                  Padding(
+                    padding: const EdgeInsets.all(20),
                     child: SectionTitle(title: 'Heruntergeladen'),
                   ),
                   Padding(
-                    padding: AppSpacing.screen,
+                    padding: const EdgeInsets.all(20),
                     child: BookGrid(
                       books: downloaded,
                       shrinkWrap: true,
@@ -118,7 +116,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ],
                 if (favorites.isNotEmpty) ...[
                   Padding(
-                    padding: AppSpacing.screen,
+                    padding: const EdgeInsets.all(20),
                     child: SectionTitle(
                       title: 'Favoriten',
                       actionLabel: 'Alle',
@@ -130,7 +128,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     onBookTap: (book) => _open(book.id),
                   ),
                 ],
-                AppSpacing.gapXxl,
+                const SizedBox(height: 48),
               ],
             ),
     );
@@ -160,19 +158,19 @@ class _Shortcut extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     return Material(
       color: colors.surface,
-      borderRadius: AppRadius.card,
+      borderRadius: BorderRadius.circular(LuminaRadius.l),
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadius.card,
+        borderRadius: BorderRadius.circular(LuminaRadius.l),
         child: Padding(
-          padding: AppSpacing.card,
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Icon(icon, color: colors.accent),
-              AppSpacing.hGapM,
+              Icon(icon, color: colors.primary),
+              const SizedBox(width: 16),
               Expanded(
                 child: Text(label,
                     style: Theme.of(context)
@@ -180,7 +178,7 @@ class _Shortcut extends StatelessWidget {
                         .bodyLarge
                         ?.copyWith(fontWeight: FontWeight.w600)),
               ),
-              Icon(AppIcons.chapterNext, color: colors.inkTertiary),
+              Icon(AppIcons.chapterNext, color: colors.onSurfaceVariant),
             ],
           ),
         ),

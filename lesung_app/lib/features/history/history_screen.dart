@@ -10,9 +10,7 @@ import '../../app/router.dart';
 import '../../components/app_states.dart';
 import '../../components/book_cover.dart';
 import '../../components/section_title.dart';
-import '../../design_system/tokens/app_colors.dart';
-import '../../design_system/tokens/app_radius.dart';
-import '../../design_system/tokens/app_spacing.dart';
+import '../../design_system/tokens/lumina_radius.dart';
 
 /// Verlauf — sessions de lecture groupées par jour.
 class HistoryScreen extends ConsumerStatefulWidget {
@@ -53,18 +51,18 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       body: state.loaded && entries.isEmpty
           ? AppEmptyState.noHistory()
           : ListView(
-              padding: AppSpacing.screen.copyWith(top: AppSpacing.l),
+              padding: const EdgeInsets.symmetric(horizontal: 20).copyWith(top: 16),
               children: [
                 for (final group in _groupByDay(entries)) ...[
                   SectionTitle(title: group.$1),
-                  AppSpacing.gapM,
+                  const SizedBox(height: 16),
                   for (final entry in group.$2)
                     _HistoryTile(
                       entry: entry,
                       book: _books[entry.bookId],
                       onTap: () => _open(entry.bookId),
                     ),
-                  AppSpacing.gapXl,
+                  const SizedBox(height: 32),
                 ],
               ],
             ),
@@ -115,15 +113,15 @@ class _HistoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColors.of(context);
+    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final duration = entry.durationSeconds;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.m),
+      padding: const EdgeInsets.only(bottom: 16),
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadius.cardSmall,
+        borderRadius: BorderRadius.circular(LuminaRadius.m),
         child: Row(
           children: [
             BookCover(
@@ -131,7 +129,7 @@ class _HistoryTile extends StatelessWidget {
               coverUrl: book?.coverUrl,
               width: 44,
             ),
-            AppSpacing.hGapM,
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,7 +145,7 @@ class _HistoryTile extends StatelessWidget {
                         _formatDuration(duration),
                     ].join(' · '),
                     style: textTheme.bodySmall
-                        ?.copyWith(color: colors.inkTertiary),
+                        ?.copyWith(color: colors.onSurfaceVariant),
                   ),
                 ],
               ),

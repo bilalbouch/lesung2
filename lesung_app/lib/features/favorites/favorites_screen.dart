@@ -7,7 +7,6 @@ import '../../app/engine.dart';
 import '../../app/router.dart';
 import '../../components/app_states.dart';
 import '../../components/book_grid.dart';
-import '../../design_system/tokens/app_spacing.dart';
 
 /// Favoriten — tous les livres marqués d'un cœur, téléchargés ou non.
 class FavoritesScreen extends ConsumerStatefulWidget {
@@ -44,7 +43,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
       body: state.loaded && items.isEmpty
           ? AppEmptyState.noFavorites()
           : Padding(
-              padding: AppSpacing.screen.copyWith(top: AppSpacing.l),
+              padding: const EdgeInsets.symmetric(horizontal: 20).copyWith(top: 16),
               child: BookGrid(
                 books: items,
                 onBookTap: (item) => _open(item.id),
