@@ -129,7 +129,7 @@ class _CollectionsScreenState extends ConsumerState<CollectionsScreen> {
         child: const Icon(AppIcons.add),
       ),
       body: state.loaded && collections.isEmpty
-          ? AppEmptyState.emptyCollection()
+          ? AppEmptyState.emptyCollection(context: context)
           : ListView.separated(
               padding: AppSpacing.screen.copyWith(top: AppSpacing.l),
               itemCount: collections.length,
@@ -220,7 +220,7 @@ class _CollectionDetailScreenState
     return Scaffold(
       appBar: AppBar(title: Text(widget.collection.name)),
       body: _books.isEmpty
-          ? AppEmptyState.emptyCollection()
+          ? AppEmptyState.emptyCollection(context: context)
           : GridView.builder(
               padding: AppSpacing.screen.copyWith(top: AppSpacing.l),
               gridDelegate:

@@ -7,6 +7,7 @@ import '../../app/router.dart';
 import '../../components/app_states.dart';
 import '../../components/book_grid.dart';
 import '../../components/section_title.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Accueil — « Start ». Continuer la lecture + ajouts récents.
 /// Le livre est toujours l'élément principal ; le reste est discret.
@@ -33,6 +34,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final state = engine.library.state;
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     final continueReading = state.continueReading
         .map((book) => BookItem(
@@ -57,6 +59,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: SafeArea(
         child: state.loaded && recent.isEmpty && continueReading.isEmpty
             ? AppEmptyState.emptyLibrary(
+                context: context,
                 onExplore: () => context.go(AppRoutes.search))
             : ListView(
                 children: [
@@ -71,7 +74,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ?.copyWith(color: colors.onSurface)),
                         const SizedBox(height: 8),
                         Text(
-                          _greeting(),
+                          _greeting(l10n),
                           style: textTheme.bodyMedium,
                         ),
                       ],
@@ -80,8 +83,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   if (continueReading.isNotEmpty) ...[
                     Padding(
                       padding: const EdgeInsets.all(20),
-                      child:
-                          SectionTitle(title: 'Weiterlesen'),
+                      child: SectionTitle(title: l10n.libraryContinueReading),
                     ),
                     BookList(
                       books: continueReading,
@@ -91,8 +93,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Padding(
                     padding: const EdgeInsets.all(20),
                     child: SectionTitle(
-                      title: 'Zuletzt hinzugefügt',
-                      actionLabel: 'Alle',
+                      title: l10n.libraryRecentlyAdded,
+                      actionLabel: l10n.actionAll,
                       onAction: () => context.go(AppRoutes.library),
                     ),
                   ),
@@ -112,11 +114,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  String _greeting() {
+  String _greeting(AppLocalizations l10n) {
     final hour = DateTime.now().hour;
-    if (hour < 11) return 'Guten Morgen.';
-    if (hour < 18) return 'Guten Tag.';
-    return 'Guten Abend.';
+    if (hour < 11) return l10n.greetingMorning;
+    if (hour < 18) return l10n.greetingDay;
+    return l10n.greetingEvening;
   }
 
   void _openBook(String bookId) async {

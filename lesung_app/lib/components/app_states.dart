@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../design_system/tokens/app_icons.dart';
+import '../l10n/generated/app_localizations.dart';
 import 'action_button.dart';
 import 'app_progress_indicator.dart';
 
 /// ÉTATS PREMIUM — aucun écran vide « mort ».
 ///
 /// Chaque état : icône sobre dans un disque teinté, titre serif,
-/// message secondaire discret, action optionnelle. Les textes sont en
-/// allemand (langue principale), prêts pour l'i18n de l'application.
+/// message secondaire discret, action optionnelle.
 class AppEmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -27,71 +27,99 @@ class AppEmptyState extends StatelessWidget {
 
   // ---------------- États prédéfinis --------------------------------
 
-  factory AppEmptyState.noResults({Key? key, required String query}) => AppEmptyState(
-        key: key,
-        icon: AppIcons.search,
-        title: 'Keine Treffer',
-        message: 'Für „$query“ wurde nichts gefunden.\n'
-            'Versuche einen anderen Titel oder Autor.',
-      );
+  factory AppEmptyState.noResults(
+      {Key? key, required BuildContext context, required String query}) {
+    final l10n = AppLocalizations.of(context)!;
+    return AppEmptyState(
+      key: key,
+      icon: AppIcons.search,
+      title: l10n.searchNoResults(query),
+      message: l10n.searchNoResultsMessage,
+    );
+  }
 
-  factory AppEmptyState.offline({Key? key, VoidCallback? onRetry}) => AppEmptyState(
-        key: key,
-        icon: AppIcons.offline,
-        title: 'Offline',
-        message: 'Keine Verbindung. Deine Bibliothek bleibt verfügbar.',
-        actionLabel: 'Erneut versuchen',
-        onAction: onRetry,
-      );
+  factory AppEmptyState.offline(
+      {Key? key, required BuildContext context, VoidCallback? onRetry}) {
+    final l10n = AppLocalizations.of(context)!;
+    return AppEmptyState(
+      key: key,
+      icon: AppIcons.offline,
+      title: l10n.errorOfflineTitle,
+      message: l10n.errorOfflineMessage,
+      actionLabel: l10n.actionRetry,
+      onAction: onRetry,
+    );
+  }
 
-  factory AppEmptyState.emptyLibrary({Key? key, VoidCallback? onExplore}) =>
-      AppEmptyState(
-        key: key,
-        icon: AppIcons.library,
-        title: 'Deine Bibliothek ist leer',
-        message: 'Suche ein Buch und lade es herunter —\n'
-            'es erscheint hier.',
-        actionLabel: 'Entdecken',
-        onAction: onExplore,
-      );
+  factory AppEmptyState.emptyLibrary(
+      {Key? key, required BuildContext context, VoidCallback? onExplore}) {
+    final l10n = AppLocalizations.of(context)!;
+    return AppEmptyState(
+      key: key,
+      icon: AppIcons.library,
+      title: l10n.libraryEmpty,
+      message: l10n.libraryEmptyMessage,
+      actionLabel: l10n.libraryExplore,
+      onAction: onExplore,
+    );
+  }
 
-  factory AppEmptyState.noDownloads({Key? key}) => AppEmptyState(
-        key: key,
-        icon: AppIcons.downloads,
-        title: 'Keine Downloads',
-        message: 'Heruntergeladene Bücher erscheinen hier.',
-      );
+  factory AppEmptyState.noDownloads(
+      {Key? key, required BuildContext context}) {
+    final l10n = AppLocalizations.of(context)!;
+    return AppEmptyState(
+      key: key,
+      icon: AppIcons.downloads,
+      title: l10n.downloadsEmpty,
+      message: l10n.downloadsEmptyMessage,
+    );
+  }
 
-  factory AppEmptyState.noFavorites({Key? key}) => AppEmptyState(
-        key: key,
-        icon: AppIcons.favorite,
-        title: 'Keine Favoriten',
-        message: 'Markiere Bücher mit dem Herz,\num sie hier zu sammeln.',
-      );
+  factory AppEmptyState.noFavorites(
+      {Key? key, required BuildContext context}) {
+    final l10n = AppLocalizations.of(context)!;
+    return AppEmptyState(
+      key: key,
+      icon: AppIcons.favorite,
+      title: l10n.favoritesEmpty,
+      message: l10n.favoritesEmptyMessage,
+    );
+  }
 
-  factory AppEmptyState.noHistory({Key? key}) => AppEmptyState(
-        key: key,
-        icon: AppIcons.history,
-        title: 'Noch kein Verlauf',
-        message: 'Gelesene Bücher erscheinen hier.',
-      );
+  factory AppEmptyState.noHistory(
+      {Key? key, required BuildContext context}) {
+    final l10n = AppLocalizations.of(context)!;
+    return AppEmptyState(
+      key: key,
+      icon: AppIcons.history,
+      title: l10n.historyEmpty,
+      message: l10n.historyEmptyMessage,
+    );
+  }
 
-  factory AppEmptyState.emptyCollection({Key? key}) => AppEmptyState(
-        key: key,
-        icon: AppIcons.collection,
-        title: 'Leere Sammlung',
-        message: 'Füge Bücher hinzu, um sie hier zu sehen.',
-      );
+  factory AppEmptyState.emptyCollection(
+      {Key? key, required BuildContext context}) {
+    final l10n = AppLocalizations.of(context)!;
+    return AppEmptyState(
+      key: key,
+      icon: AppIcons.collection,
+      title: l10n.collectionEmpty,
+      message: l10n.collectionEmptyMessage,
+    );
+  }
 
-  factory AppEmptyState.errorNetwork({Key? key, VoidCallback? onRetry}) =>
-      AppEmptyState(
-        key: key,
-        icon: AppIcons.error,
-        title: 'Etwas ist schiefgelaufen',
-        message: 'Netzwerkfehler. Bitte versuche es erneut.',
-        actionLabel: 'Erneut versuchen',
-        onAction: onRetry,
-      );
+  factory AppEmptyState.errorNetwork(
+      {Key? key, required BuildContext context, VoidCallback? onRetry}) {
+    final l10n = AppLocalizations.of(context)!;
+    return AppEmptyState(
+      key: key,
+      icon: AppIcons.error,
+      title: l10n.errorNetworkTitle,
+      message: l10n.errorNetworkMessage,
+      actionLabel: l10n.actionRetry,
+      onAction: onRetry,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

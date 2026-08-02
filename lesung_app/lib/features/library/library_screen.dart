@@ -10,6 +10,7 @@ import '../../components/book_grid.dart';
 import '../../components/section_title.dart';
 import '../../design_system/tokens/lumina_radius.dart';
 import '../../design_system/tokens/app_icons.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Bibliothèque — Weiterlesen, Heruntergeladen, Favoris, accès
 /// Collections/Verlauf.
@@ -41,6 +42,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Widget build(BuildContext context) {
     final engine = ref.read(engineProvider);
     final state = engine.library.state;
+    final l10n = AppLocalizations.of(context)!;
 
     final downloaded = state.downloadedBooks.map(_toItem).toList();
     final favorites = state.favorites.map(_toItem).toList();
@@ -53,17 +55,18 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bibliothek'),
+        title: Text(l10n.libraryTitle),
         actions: [
           IconButton(
             icon: const Icon(AppIcons.history),
-            tooltip: 'Verlauf',
+            tooltip: l10n.libraryHistory,
             onPressed: () => context.push(AppRoutes.history),
           ),
         ],
       ),
       body: isEmpty
           ? AppEmptyState.emptyLibrary(
+              context: context,
               onExplore: () => context.go(AppRoutes.search))
           : RefreshIndicator(
               onRefresh: _refresh,
@@ -77,7 +80,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       Expanded(
                         child: _Shortcut(
                           icon: AppIcons.collection,
-                          label: 'Sammlungen',
+                          label: l10n.libraryCollections,
                           onTap: () => context.push(AppRoutes.collections),
                         ),
                       ),
@@ -85,7 +88,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       Expanded(
                         child: _Shortcut(
                           icon: AppIcons.favorite,
-                          label: 'Favoriten',
+                          label: l10n.libraryFavorites,
                           onTap: () => context.push(AppRoutes.favorites),
                         ),
                       ),
@@ -95,7 +98,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 if (continueReading.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.all(20),
-                    child: SectionTitle(title: 'Weiterlesen'),
+                    child: SectionTitle(title: l10n.libraryContinueReading),
                   ),
                   BookList(
                     books: continueReading,
@@ -105,7 +108,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 if (downloaded.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.all(20),
-                    child: SectionTitle(title: 'Heruntergeladen'),
+                    child: SectionTitle(title: l10n.libraryDownloaded),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(20),
@@ -121,8 +124,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   Padding(
                     padding: const EdgeInsets.all(20),
                     child: SectionTitle(
-                      title: 'Favoriten',
-                      actionLabel: 'Alle',
+                      title: l10n.libraryFavorites,
+                      actionLabel: l10n.actionAll,
                       onAction: () => context.push(AppRoutes.favorites),
                     ),
                   ),

@@ -7,12 +7,21 @@ import 'app/router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'design_system/lumina_theme.dart';
 import 'design_system/tokens/lumina_colors.dart';
+import 'l10n/generated/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  // Symboles de date allemands (Verlauf, groupage par jour).
-  initializeDateFormatting('de');
+  try {
+    await Firebase.initializeApp();
+  } catch (_) {
+    // Firebase est facultatif : l'application reste entièrement utilisable
+    // en local lorsqu'aucun projet Firebase n'est configuré.
+  }
+  await Future.wait([
+    initializeDateFormatting('de'),
+    initializeDateFormatting('en'),
+    initializeDateFormatting('fr'),
+  ]);
   runApp(const LesungBootstrap());
 }
 
@@ -104,11 +113,13 @@ class LesungApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Lesung',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
       debugShowCheckedModeBanner: false,
       theme: LuminaTheme.light,
       darkTheme: LuminaTheme.dark,
       themeMode: ThemeMode.system,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: appRouter,
     );
   }

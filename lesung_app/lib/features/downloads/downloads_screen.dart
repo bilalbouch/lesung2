@@ -8,6 +8,7 @@ import '../../app/router.dart';
 import '../../components/app_states.dart';
 import '../../components/download_card.dart';
 import '../../components/section_title.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Téléchargements — actifs en haut (progression temps réel),
 /// terminés et échoués en dessous.
@@ -38,6 +39,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
   Widget build(BuildContext context) {
     final engine = ref.read(engineProvider);
     final downloads = engine.downloads;
+    final l10n = AppLocalizations.of(context)!;
 
     final active = downloads.active;
     final failed = downloads.failed;
@@ -47,14 +49,14 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
         active.isEmpty && failed.isEmpty && completed.isEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Downloads')),
+      appBar: AppBar(title: Text(l10n.downloadsTitle)),
       body: empty
-          ? AppEmptyState.noDownloads()
+          ? AppEmptyState.noDownloads(context: context)
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
                 if (active.isNotEmpty) ...[
-                  const SectionTitle(title: 'Aktiv'),
+                  SectionTitle(title: l10n.downloadsActive),
                   for (final task in active)
                     Padding(
                       padding:
@@ -63,7 +65,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                     ),
                 ],
                 if (failed.isNotEmpty) ...[
-                  const SectionTitle(title: 'Fehlgeschlagen'),
+                  SectionTitle(title: l10n.downloadsFailed),
                   for (final task in failed)
                     Padding(
                       padding:
@@ -72,7 +74,7 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                     ),
                 ],
                 if (completed.isNotEmpty) ...[
-                  const SectionTitle(title: 'Abgeschlossen'),
+                  SectionTitle(title: l10n.downloadsCompleted),
                   for (final task in completed)
                     Padding(
                       padding:

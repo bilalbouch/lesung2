@@ -1,0 +1,11 @@
+{
+  "name": "lesung2",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "cd lesung_app && flutter build web",
+    "analyze": "cd lesung_app && flutter analyze",
+    "test": "cd lesung && dart test"
+  }
+}

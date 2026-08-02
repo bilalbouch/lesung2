@@ -12,6 +12,7 @@ import '../../components/app_search_bar.dart';
 import '../../components/app_states.dart';
 import '../../components/book_cover.dart';
 import '../../design_system/tokens/app_icons.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Recherche — la fonctionnalité la plus importante de l'app.
 class SearchScreen extends ConsumerStatefulWidget {
@@ -36,6 +37,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -55,19 +57,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 children: [
                   _FormatChip(
-                    label: 'Alle',
+                    label: l10n.formatAll,
                     selected: _formatFilter == null,
                     onTap: () => _applyFilter(null),
                   ),
                   const SizedBox(width: 8),
                   _FormatChip(
-                    label: 'EPUB',
+                    label: l10n.formatEpub,
                     selected: _formatFilter == BookFormat.epub,
                     onTap: () => _applyFilter(BookFormat.epub),
                   ),
                   const SizedBox(width: 8),
                   _FormatChip(
-                    label: 'PDF',
+                    label: l10n.formatPdf,
                     selected: _formatFilter == BookFormat.pdf,
                     onTap: () => _applyFilter(BookFormat.pdf),
                   ),
@@ -92,19 +94,23 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Widget _body(SearchUiState? ui) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ui ?? const SearchUiState(status: SearchUiStatus.idle);
     switch (state.status) {
       case SearchUiStatus.idle:
         return const _SearchPrompt(key: ValueKey('prompt'));
       case SearchUiStatus.loading:
-        return const AppLoadingState(
-            key: ValueKey('loading'), label: 'Suche läuft…');
+        return AppLoadingState(
+            key: const ValueKey('loading'), label: l10n.searchLoading);
       case SearchUiStatus.empty:
         return AppEmptyState.noResults(
-            key: const ValueKey('empty'), query: _controller.text);
+            key: const ValueKey('empty'),
+            context: context,
+            query: _controller.text);
       case SearchUiStatus.error:
         return AppEmptyState.errorNetwork(
           key: const ValueKey('error'),
+          context: context,
           onRetry: () =>
               _search.search(_controller.text, format: _formatFilter),
         );
@@ -126,6 +132,7 @@ class _SearchPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -133,12 +140,12 @@ class _SearchPrompt extends StatelessWidget {
           Icon(AppIcons.search, size: 44, color: colors.onSurfaceVariant),
           const SizedBox(height: 24),
           Text(
-            'Wonach suchst du?',
+            l10n.searchPromptTitle,
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
           Text(
-            'Titel, Autor oder ISBN eingeben.',
+            l10n.searchPromptSubtitle,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],

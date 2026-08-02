@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../design_system/tokens/app_breakpoints.dart';
 import '../design_system/tokens/app_icons.dart';
+import '../l10n/generated/app_localizations.dart';
 
 /// Destination de l'application (barre du bas / rail latéral).
 class AppDestination {
@@ -17,28 +18,31 @@ class AppDestination {
 }
 
 /// Destinations principales (ordre stable).
-const appDestinations = [
-  AppDestination(
-      label: 'Start',
-      icon: AppIcons.home,
-      selectedIcon: AppIcons.homeFilled),
-  AppDestination(
-      label: 'Suche',
-      icon: AppIcons.search,
-      selectedIcon: AppIcons.search),
-  AppDestination(
-      label: 'Bibliothek',
-      icon: AppIcons.library,
-      selectedIcon: AppIcons.libraryFilled),
-  AppDestination(
-      label: 'Downloads',
-      icon: AppIcons.downloads,
-      selectedIcon: AppIcons.downloadsFilled),
-  AppDestination(
-      label: 'Mehr',
-      icon: AppIcons.settings,
-      selectedIcon: AppIcons.settings),
-];
+List<AppDestination> appDestinations(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+  return [
+    AppDestination(
+        label: l10n.tabHome,
+        icon: AppIcons.home,
+        selectedIcon: AppIcons.homeFilled),
+    AppDestination(
+        label: l10n.tabSearch,
+        icon: AppIcons.search,
+        selectedIcon: AppIcons.search),
+    AppDestination(
+        label: l10n.tabLibrary,
+        icon: AppIcons.library,
+        selectedIcon: AppIcons.libraryFilled),
+    AppDestination(
+        label: l10n.tabDownloads,
+        icon: AppIcons.downloads,
+        selectedIcon: AppIcons.downloadsFilled),
+    AppDestination(
+        label: l10n.tabMore,
+        icon: AppIcons.settings,
+        selectedIcon: AppIcons.settings),
+  ];
+}
 
 /// Navigation adaptative : NavigationBar sur téléphone, NavigationRail
 /// sur tablette. Même source de destinations, mêmes tokens.
@@ -58,6 +62,7 @@ class AppNavigationScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final tablet = AppBreakpoints.isTablet(context);
+    final destinations = appDestinations(context);
 
     if (tablet) {
       return Scaffold(
@@ -68,7 +73,7 @@ class AppNavigationScaffold extends StatelessWidget {
               selectedIndex: currentIndex,
               onDestinationSelected: onDestinationSelected,
               destinations: [
-                for (final destination in appDestinations)
+                for (final destination in destinations)
                   NavigationRailDestination(
                     icon: Icon(destination.icon),
                     selectedIcon: Icon(destination.selectedIcon),
@@ -90,7 +95,7 @@ class AppNavigationScaffold extends StatelessWidget {
         selectedIndex: currentIndex,
         onDestinationSelected: onDestinationSelected,
         destinations: [
-          for (final destination in appDestinations)
+          for (final destination in destinations)
             NavigationDestination(
               icon: Icon(destination.icon),
               selectedIcon: Icon(destination.selectedIcon),

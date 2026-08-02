@@ -11,6 +11,7 @@ import '../../components/app_states.dart';
 import '../../components/book_cover.dart';
 import '../../components/section_title.dart';
 import '../../design_system/tokens/lumina_radius.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Verlauf — sessions de lecture groupées par jour.
 class HistoryScreen extends ConsumerStatefulWidget {
@@ -49,7 +50,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Verlauf')),
       body: state.loaded && entries.isEmpty
-          ? AppEmptyState.noHistory()
+          ? AppEmptyState.noHistory(context: context)
           : ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20).copyWith(top: 16),
               children: [

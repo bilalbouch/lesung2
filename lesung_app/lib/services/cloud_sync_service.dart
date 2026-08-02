@@ -1,20 +1,24 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 /// Service de synchronisation cloud via Firebase.
 /// Auth anonyme + Firestore pour backup progression/favoris/bookmarks.
 /// Mode degrade : fonctionne offline si Firebase non configure.
 class CloudSyncService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late FirebaseAuth _auth;
+  late FirebaseFirestore _firestore;
   bool _available = false;
 
-  String? get _uid => _auth.currentUser?.uid;
+  String? get _uid => _available ? _auth.currentUser?.uid : null;
 
   /// Initialise l'authentification anonyme si necessaire.
   /// Silencieux si Firebase n'est pas configure (mode offline).
   Future<void> init() async {
+    if (Firebase.apps.isEmpty) return;
     try {
+      _auth = FirebaseAuth.instance;
+      _firestore = FirebaseFirestore.instance;
       if (_auth.currentUser == null) {
         await _auth.signInAnonymously();
       }
