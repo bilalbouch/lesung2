@@ -4,9 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'app/engine.dart';
 import 'app/router.dart';
-import 'design_system/tokens/app_colors.dart';
 import 'design_system/tokens/app_motion.dart';
-import 'design_system/tokens/app_spacing.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/cloud_sync_service.dart';
 import 'design_system/lumina_theme.dart';
